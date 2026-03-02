@@ -46,9 +46,7 @@ export default function UserSettings() {
         `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/auth/me`,
         {
           headers: {
-            Authorization: `Bearer ${JSON.parse(
-              localStorage.getItem("token")
-            )}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -155,9 +153,7 @@ export default function UserSettings() {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${JSON.parse(
-              localStorage.getItem("token")
-            )}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({
             current_password: passwordForm.currentPassword,
