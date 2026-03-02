@@ -1,0 +1,134 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "binary"
+  output     = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  user
+  admin
+}
+
+enum SubscriptionStatus {
+  active
+  expired
+  cancelled
+}
+
+enum Format {
+  image
+  video
+  audio
+  pdf
+}
+
+model User {
+  id       String  @id @default(uuid()) @db.Uuid
+  email    String  @unique
+  password String
+  name     String?
+  role     Role    @default(user)
+
+  isVerified      Boolean   @default(false)
+  verificationOtp String?
+  otpExpiresAt    DateTime?
+
+  resetToken        String?
+  resetTokenExpires DateTime?
+
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  UserSubscription UserSubscription[]
+  Folder           Folder[]
+  File             File[]
+}
+
+model Subscription {
+  id   String @id @default(uuid()) @db.Uuid
+  name String @unique
+
+  maxFolders     Int
+  maxNesting     Int
+  allowedTypes   String[]
+  maxFileSizeMB  Int
+  totalFileLimit Int
+  filesPerFolder Int
+  priceMonthly   Float?
+  isActive       Boolean  @default(true)
+
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  UserSubscription UserSubscription[]
+}
+
+model UserSubscription {
+  id String @id @default(uuid()) @db.Uuid
+
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String       @db.Uuid
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String       @db.Uuid
+
+  stripeSubscriptionId String?
+  stripeCustomerId     String?
+
+  startDate DateTime
+  endDate   DateTime?
+  status    SubscriptionStatus @default(active)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([subscriptionId])
+}
+
+model Folder {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+
+  parentId   String?  @db.Uuid
+  parent     Folder?  @relation("FolderToSubfolder", fields: [parentId], references: [id], onDelete: Cascade)
+  subfolders Folder[] @relation("FolderToSubfolder")
+
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  level Int @default(0)
+
+  files File[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([parentId])
+  @@index([userId])
+  @@index([userId, parentId])
+}
+
+model File {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+
+  url      String
+  publicId String
+  format   Format
+  sizeMB   Float
+
+  folderId String @db.Uuid
+  folder   Folder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([folderId])
+  @@index([userId, folderId])
+}
