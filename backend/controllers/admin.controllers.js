@@ -225,7 +225,8 @@ export const getAdminStats = async (req, res, next) => {
           email: true,
           role: true,
           createdAt: true,
-          subscriptions: {
+          UserSubscription: {
+            // ✅ FIXED: was `subscriptions`, must match Prisma schema relation name
             where: { status: "active" },
             select: {
               id: true,

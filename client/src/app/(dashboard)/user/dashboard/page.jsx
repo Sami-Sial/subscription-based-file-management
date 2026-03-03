@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   AreaChart,
   Area,
@@ -20,6 +20,7 @@ import {
 } from "recharts";
 import {
   Folder,
+  FolderOpen,
   Files,
   Crown,
   HardDrive,
@@ -32,6 +33,13 @@ import {
   Activity,
   Cloud,
   RefreshCw,
+  ChevronRight,
+  ChevronDown,
+  Shield,
+  Globe,
+  Lock,
+  Hash,
+  Calendar,
 } from "lucide-react";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -78,7 +86,7 @@ function computeStats(folders) {
     totalSizeMB = 0;
   const fmt = { image: 0, video: 0, audio: 0, pdf: 0 };
   const nestDist = {};
-  const allFiles = []; // collect every file with metadata
+  const allFiles = [];
 
   const walk = (list) => {
     for (const f of list) {
@@ -97,13 +105,11 @@ function computeStats(folders) {
   };
   walk(folders);
 
-  // ── Nesting distribution for bar chart ──
   const nestingData = Array.from({ length: maxNesting + 1 }, (_, i) => ({
     level: `L${i}`,
     folders: nestDist[i] || 0,
   }));
 
-  // ── File type pie ──
   const pieData = Object.entries(fmt)
     .filter(([, v]) => v > 0)
     .map(([k, v]) => ({
@@ -113,14 +119,12 @@ function computeStats(folders) {
       key: k,
     }));
 
-  // ── Activity: count files uploaded per day for last 7 days ──
-  // Build a map of dateStr → { files: N, sizeMB: N }
   const now = new Date();
   const dayMap = {};
   for (let i = 6; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
-    const key = d.toISOString().slice(0, 10); // "YYYY-MM-DD"
+    const key = d.toISOString().slice(0, 10);
     dayMap[key] = { files: 0, sizeMB: 0 };
   }
 
@@ -145,7 +149,6 @@ function computeStats(folders) {
     };
   });
 
-  // ── Recent files: sorted by createdAt desc ──
   const recent = [...allFiles]
     .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
     .slice(0, 10);
@@ -169,6 +172,15 @@ function fmtMB(mb) {
   if (!mb) return "0 MB";
   if (mb < 1024) return `${mb.toFixed(1)} MB`;
   return `${(mb / 1024).toFixed(2)} GB`;
+}
+
+function fmtDate(d) {
+  if (!d) return "—";
+  return new Date(d).toLocaleDateString("en", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 function ProgressBar({ pct = 0, color }) {
@@ -262,6 +274,210 @@ function Card({ children, delay = 0, className = "" }) {
   );
 }
 
+// ─── Folder Tree Node ─────────────────────────────────────────────────────────
+
+function FolderNode({ folder, depth = 0 }) {
+  const [open, setOpen] = useState(depth === 0);
+  const hasChildren = folder.subfolders?.length > 0 || folder.files?.length > 0;
+  const fileCount = folder.files?.length || 0;
+  const subCount = folder.subfolders?.length || 0;
+
+  const depthColors = [C.indigo, C.violet, C.sky, C.emerald, C.amber, C.rose];
+  const accent = depthColors[depth % depthColors.length];
+
+  return (
+    <div className={depth > 0 ? "ml-4 border-l border-slate-100 pl-3" : ""}>
+      <div
+        className="flex items-center gap-2 py-2 px-2 rounded-lg hover:bg-slate-50 cursor-pointer group transition-colors"
+        onClick={() => hasChildren && setOpen((o) => !o)}
+      >
+        {/* Toggle icon */}
+        <div className="w-4 h-4 shrink-0 flex items-center justify-center">
+          {hasChildren ? (
+            open ? (
+              <ChevronDown className="w-3 h-3 text-slate-400" />
+            ) : (
+              <ChevronRight className="w-3 h-3 text-slate-400" />
+            )
+          ) : (
+            <span className="w-1 h-1 rounded-full bg-slate-200 mx-auto" />
+          )}
+        </div>
+
+        {/* Folder icon */}
+        <div
+          className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
+          style={{ background: `${accent}15` }}
+        >
+          {open ? (
+            <FolderOpen className="w-3.5 h-3.5" style={{ color: accent }} />
+          ) : (
+            <Folder className="w-3.5 h-3.5" style={{ color: accent }} />
+          )}
+        </div>
+
+        {/* Name */}
+        <span className="text-sm font-semibold text-slate-700 flex-1 truncate">
+          {folder.name}
+        </span>
+
+        {/* Badges */}
+        <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          {subCount > 0 && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-slate-100 text-slate-500">
+              {subCount} sub
+            </span>
+          )}
+          {fileCount > 0 && (
+            <span
+              className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+              style={{ background: `${accent}15`, color: accent }}
+            >
+              {fileCount} files
+            </span>
+          )}
+        </div>
+
+        {/* Always-visible file count */}
+        {fileCount > 0 && (
+          <span
+            className="text-[10px] px-1.5 py-0.5 rounded-full font-bold group-hover:opacity-0 transition-opacity"
+            style={{ background: `${accent}15`, color: accent }}
+          >
+            {fileCount}
+          </span>
+        )}
+      </div>
+
+      {/* Children */}
+      <AnimatePresence initial={false}>
+        {open && hasChildren && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            {/* Files in this folder */}
+            {folder.files?.length > 0 && (
+              <div className="ml-4 border-l border-slate-100 pl-3">
+                {folder.files.map((file, i) => {
+                  const cfg = FORMAT_CFG[file.format] || FORMAT_CFG.pdf;
+                  return (
+                    <div
+                      key={file.id || i}
+                      className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-slate-50 transition-colors"
+                    >
+                      <div
+                        className="w-5 h-5 rounded flex items-center justify-center shrink-0"
+                        style={{ background: `${cfg.color}15` }}
+                      >
+                        <cfg.Icon
+                          className="w-3 h-3"
+                          style={{ color: cfg.color }}
+                        />
+                      </div>
+                      <span className="text-xs text-slate-600 flex-1 truncate">
+                        {file.name}
+                      </span>
+                      <span className="text-[10px] text-slate-400 shrink-0">
+                        {fmtMB(file.sizeMB)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {/* Subfolders */}
+            {folder.subfolders?.map((sub, i) => (
+              <FolderNode key={sub.id || i} folder={sub} depth={depth + 1} />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── Folder Explorer Panel ────────────────────────────────────────────────────
+
+function FolderExplorer({
+  folders,
+  label,
+  accent,
+  icon: Icon,
+  badge,
+  emptyMsg,
+  delay = 0,
+}) {
+  const totalFolders = folders?.length || 0;
+  const totalFiles =
+    folders?.reduce((s, f) => s + (f.files?.length || 0), 0) || 0;
+
+  return (
+    <Card delay={delay} className="flex flex-col">
+      <div className="flex items-start justify-between mb-1">
+        <SectionLabel>{label}</SectionLabel>
+        <div className="flex items-center gap-2 -mt-0.5">
+          {badge && (
+            <span
+              className="text-[10px] font-black px-2 py-0.5 rounded-full"
+              style={{ background: `${accent}15`, color: accent }}
+            >
+              {badge}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Summary strip */}
+      <div
+        className="flex items-center gap-4 px-3 py-2.5 rounded-xl mb-4"
+        style={{ background: `${accent}08`, border: `1px solid ${accent}20` }}
+      >
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+          style={{ background: `${accent}15` }}
+        >
+          <Icon className="w-4 h-4" style={{ color: accent }} />
+        </div>
+        <div className="flex items-center gap-5 flex-1">
+          <div>
+            <p className="text-lg font-black text-slate-900 leading-none">
+              {totalFolders}
+            </p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Folders</p>
+          </div>
+          <div className="w-px h-8 bg-slate-200" />
+          <div>
+            <p className="text-lg font-black text-slate-900 leading-none">
+              {totalFiles}
+            </p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Files</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Tree */}
+      {!folders || folders.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-10 text-slate-300">
+          <Folder className="w-10 h-10 mb-2" />
+          <p className="text-xs font-medium">
+            {emptyMsg || "No folders found"}
+          </p>
+        </div>
+      ) : (
+        <div className="max-h-80 overflow-y-auto scrollbar-thin space-y-0.5 pr-1">
+          {folders.map((folder, i) => (
+            <FolderNode key={folder.id || i} folder={folder} depth={0} />
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
 export default function Dashboard() {
@@ -270,6 +486,11 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [user, setUser] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+
+  // New states for folder explorer sections
+  const [allFolders, setAllFolders] = useState([]);
+  const [subFolders, setSubFolders] = useState([]);
+  const [foldersLoading, setFoldersLoading] = useState(true);
 
   const fetchData = async () => {
     const headers = { Authorization: `Bearer ${getToken()}` };
@@ -289,7 +510,6 @@ export default function Dashboard() {
       if (active?.subscription) setPlan(active.subscription);
 
       setStats(computeStats(folderData.data || []));
-
       if (meData.data) setUser(meData.data);
     } catch (e) {
       console.error(e);
@@ -299,8 +519,30 @@ export default function Dashboard() {
     }
   };
 
+  const fetchFolderExplorers = async () => {
+    setFoldersLoading(true);
+    const headers = { Authorization: `Bearer ${getToken()}` };
+    try {
+      const [allRes, subRes] = await Promise.all([
+        fetch(`${BASE}/api/user/all-folders`, { headers }),
+        fetch(`${BASE}/api/user/active-subscription-folders`, { headers }),
+      ]);
+      const [allData, subData] = await Promise.all([
+        allRes.json(),
+        subRes.json(),
+      ]);
+      setAllFolders(allData.data || []);
+      setSubFolders(subData.data || []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setFoldersLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchData();
+    fetchFolderExplorers();
   }, []);
 
   if (loading) {
@@ -329,7 +571,6 @@ export default function Dashboard() {
     { name: "Nesting", value: Math.round(nestPct), fill: C.emerald },
   ];
 
-  // Total files uploaded this week (from real data)
   const filesThisWeek = stats?.activityData?.reduce((s, d) => s + d.files, 0);
   const sizeThisWeek = stats?.activityData?.reduce((s, d) => s + d.sizeMB, 0);
 
@@ -384,6 +625,7 @@ export default function Dashboard() {
               onClick={() => {
                 setRefreshing(true);
                 fetchData();
+                fetchFolderExplorers();
               }}
               className="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors cursor-pointer"
             >
@@ -440,7 +682,7 @@ export default function Dashboard() {
 
         {/* ── Charts Row 1 ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Area chart — real upload activity */}
+          {/* Area chart */}
           <Card delay={0.25} className="lg:col-span-2">
             <div className="flex items-start justify-between mb-1">
               <SectionLabel>Upload Activity — Last 7 Days</SectionLabel>
@@ -598,7 +840,7 @@ export default function Dashboard() {
 
         {/* ── Charts Row 2 ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Donut pie — real format distribution */}
+          {/* Donut pie */}
           <Card delay={0.35}>
             <SectionLabel>File Type Distribution</SectionLabel>
             {stats.totalFiles === 0 ? (
@@ -642,7 +884,6 @@ export default function Dashboard() {
                     </div>
                   ))}
                 </div>
-                {/* Percentage breakdown */}
                 <div className="mt-3 pt-3 border-t border-slate-100 space-y-1.5">
                   {stats.pieData.map((d) => (
                     <div key={d.key}>
@@ -673,7 +914,7 @@ export default function Dashboard() {
             )}
           </Card>
 
-          {/* Nesting bar chart — real per-level counts */}
+          {/* Nesting bar chart */}
           <Card delay={0.4}>
             <div className="flex items-start justify-between mb-1">
               <SectionLabel>Folder Depth Distribution</SectionLabel>
@@ -735,9 +976,8 @@ export default function Dashboard() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
-                {/* Level summary */}
                 <div className="grid grid-cols-3 gap-2 mt-2 pt-2 border-t border-slate-100">
-                  {stats.nestingData.map((d, i) => (
+                  {stats.nestingData.map((d) => (
                     <div key={d.level} className="text-center">
                       <p className="text-sm font-black text-slate-900">
                         {d.folders}
@@ -750,7 +990,7 @@ export default function Dashboard() {
             )}
           </Card>
 
-          {/* Plan details — real plan data */}
+          {/* Plan details */}
           <Card delay={0.45} className="flex flex-col">
             <SectionLabel>Your Plan</SectionLabel>
             {plan ? (
@@ -863,9 +1103,54 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* ── Recent Files — sorted by createdAt ── */}
+        {/* ── Folder Explorers ── */}
+        {foldersLoading ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-4"
+          >
+            {[0, 1].map((i) => (
+              <div
+                key={i}
+                className="rounded-2xl bg-white border border-slate-200 shadow-sm p-5 h-64 flex items-center justify-center"
+              >
+                <div className="flex flex-col items-center gap-2 text-slate-300">
+                  <Cloud className="w-7 h-7 animate-pulse" />
+                  <p className="text-xs font-medium">Loading folders...</p>
+                </div>
+              </div>
+            ))}
+          </motion.div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* All Folders */}
+            <FolderExplorer
+              folders={allFolders}
+              label="All Folders"
+              accent={C.indigo}
+              icon={Globe}
+              badge={`${allFolders.length} root`}
+              emptyMsg="No folders found"
+              delay={0.5}
+            />
+
+            {/* Active Subscription Folders */}
+            <FolderExplorer
+              folders={subFolders}
+              label="Active Subscription Folders"
+              accent={C.emerald}
+              icon={Shield}
+              badge={plan ? plan.name : "Subscription"}
+              emptyMsg="No subscription folders"
+              delay={0.55}
+            />
+          </div>
+        )}
+
+        {/* ── Recent Files ── */}
         {stats.recent.length > 0 && (
-          <Card delay={0.5}>
+          <Card delay={0.6}>
             <div className="flex items-center justify-between mb-4">
               <SectionLabel>Recent Files</SectionLabel>
               <span className="text-[11px] text-slate-400 font-medium -mt-4">
@@ -880,7 +1165,7 @@ export default function Dashboard() {
                     key={file.id || i}
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.5 + i * 0.03 }}
+                    transition={{ delay: 0.6 + i * 0.03 }}
                     className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-slate-200 hover:bg-white transition-all"
                   >
                     <div

@@ -9,7 +9,7 @@ import {
 } from "../middlewares/validate.middleware.js";
 
 // ─── SUBSCRIBE / CHANGE SUBSCRIPTION
-router.post("/subscribe", isLoggedIn, controller.subscribe);
+router.post("/subscribe-free", isLoggedIn, controller.subscribeFree);
 router.get("/my-subscriptions", isLoggedIn, controller.getUserSubscriptions);
 router.get("/all-subscriptions", controller.getActiveSubscriptions);
 
@@ -24,7 +24,12 @@ router.post("/files", isLoggedIn, controller.uploadFile);
 router.put("/files/:id", isLoggedIn, controller.updateFile);
 router.delete("/files/:id", isLoggedIn, controller.deleteFile);
 
-// ─── GET ALL FOLDERS & FILES
-router.get("/folders", isLoggedIn, controller.getFoldersAndFiles);
+// ─── GET FOLDERS & FILES
+router.get("/all-folders", isLoggedIn, controller.getFoldersAndFiles);
+router.get(
+  "/active-subscription-folders",
+  isLoggedIn,
+  controller.getActivePlanFilesAndFolders
+);
 
 export default router;

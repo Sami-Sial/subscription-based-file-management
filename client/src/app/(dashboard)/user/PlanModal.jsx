@@ -41,7 +41,7 @@ export default function PlanModal({
     setSelectLoading(subscription.id);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/user/subscribe`,
+        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/user/subscribe-free`,
         {
           method: "POST",
           headers: {

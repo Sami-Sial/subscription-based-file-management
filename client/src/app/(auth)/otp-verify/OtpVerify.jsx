@@ -118,6 +118,7 @@ export default function OTPVerification() {
       setOtp(Array(OTP_LENGTH).fill(""));
       setTimeout(() => inputRefs.current[0]?.focus(), 200);
     } catch (error) {
+      console.log(error);
       toast.error(error.message || "Failed to resend code. Please try again.");
     } finally {
       setLoadingResend(false);

@@ -1,45 +1,88 @@
 import { prisma } from "../lib/prisma.js";
 import { success, error } from "../lib/response.js";
 
-// ─── SUBSCRIBE / CHANGE SUBSCRIPTION ─────────────
-export const subscribe = async (req, res) => {
+// ─── SUBSCRIBE / FREE SUBSCRIPTION ─────────────
+export const subscribeFree = async (req, res) => {
   try {
     const userId = req.user.id;
     const { subscriptionId } = req.body;
 
+    // Fetch requested subscription
     const subscription = await prisma.subscription.findUnique({
       where: { id: subscriptionId },
     });
     if (!subscription) return error(res, 404, "Subscription not found");
 
-    // Find currently active subscription
+    // Ensure it's a free plan
+    if (subscription.priceMonthly > 0) {
+      return error(
+        res,
+        400,
+        "This endpoint is only for subscribing to the free plan"
+      );
+    }
+
+    const now = new Date();
+
+    // ─── CHECK ACTIVE PAID SUBSCRIPTION ─────────
     const activeSub = await prisma.userSubscription.findFirst({
       where: { userId, status: "active" },
       orderBy: { startDate: "desc" },
     });
 
     if (activeSub) {
-      // End previous subscription
-      await prisma.userSubscription.update({
-        where: { id: activeSub.id },
-        data: {
-          status: "expired",
-          endDate: new Date(),
-        },
+      const activePlan = await prisma.subscription.findUnique({
+        where: { id: activeSub.subscriptionId },
       });
+
+      if (activePlan.priceMonthly > 0) {
+        const endDate = activeSub.endDate || new Date(activeSub.startDate);
+        return error(
+          res,
+          400,
+          `You currently have an active paid subscription. You can downgrade to free plan after ${endDate.toDateString()}. It will automatically expire then.`
+        );
+      }
     }
 
-    // Create new subscription
+    // ─── CHECK TOTAL FREE PLAN USAGE ─────────
+    const freeSubs = await prisma.userSubscription.findMany({
+      where: { userId, subscriptionId },
+      orderBy: { startDate: "asc" },
+    });
+
+    let totalUsedDays = 0;
+    freeSubs.forEach((sub) => {
+      const start = new Date(sub.startDate);
+      const end = sub.endDate
+        ? new Date(sub.endDate)
+        : new Date(sub.updatedAt || now);
+      totalUsedDays += Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+    });
+
+    if (totalUsedDays >= 30) {
+      return error(
+        res,
+        400,
+        `You have already used ${totalUsedDays} days of this free plan. Cannot activate again until next month.`
+      );
+    }
+
+    // ─── ACTIVATE FREE PLAN ─────────
     await prisma.userSubscription.create({
       data: {
         userId,
         subscriptionId,
-        startDate: new Date(),
+        startDate: now,
         status: "active",
       },
     });
 
-    return success(res, 200, "Subscription updated successfully");
+    return success(
+      res,
+      200,
+      `Free plan activated successfully. Total used days so far: ${totalUsedDays}`
+    );
   } catch (err) {
     console.error(err);
     return error(res, 500, "Internal server error");
@@ -76,32 +119,86 @@ export const createFolder = async (req, res) => {
     const userId = req.user.id;
     const { name, parentId } = req.body;
 
-    const userSubscription = await prisma.userSubscription.findFirst({
+    // Get active subscription and check expiry (30 days)
+    let activeSub = await prisma.userSubscription.findFirst({
       where: { userId, status: "active" },
       include: { subscription: true },
+      orderBy: { startDate: "desc" },
     });
-    if (!userSubscription) return error(res, 403, "No active subscription");
 
-    const { maxFolders, maxNesting } = userSubscription.subscription;
+    if (!activeSub) return error(res, 403, "No active subscription");
 
-    const totalFolders = await prisma.folder.count({ where: { userId } });
+    // ─── CHECK EXPIRY ─────────
+    const now = new Date();
+    const startDate = new Date(activeSub.startDate);
+    const diffDays = Math.ceil((now - startDate) / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 30) {
+      // expire the subscription
+      await prisma.userSubscription.update({
+        where: { id: activeSub.id },
+        data: { status: "expired", endDate: now },
+      });
+      return error(res, 403, "Subscription expired. Please renew your plan.");
+    }
+
+    const { maxFolders, maxNesting, priceMonthly } = activeSub.subscription;
+
+    let totalFolders = 0;
+
+    if (priceMonthly == 0) {
+      const freeSubs = await prisma.userSubscription.findMany({
+        where: {
+          userId,
+          subscription: { priceMonthly: 0 },
+        },
+        select: { id: true },
+      });
+
+      const freeSubIds = freeSubs.map((sub) => sub.id);
+
+      totalFolders = await prisma.folder.count({
+        where: {
+          userSubscriptionId: { in: freeSubIds },
+        },
+      });
+    } else {
+      totalFolders = await prisma.folder.count({
+        where: {
+          userSubscriptionId: activeSub.id,
+        },
+      });
+    }
+
     if (totalFolders >= maxFolders)
-      return error(res, 400, "Folder limit reached");
+      return error(res, 400, "Folder limit reached for current plan");
 
     let level = 0;
+
     if (parentId) {
       const parent = await prisma.folder.findUnique({
         where: { id: parentId },
       });
-      if (!parent) return error(res, 404, "Parent folder not found");
+
+      if (!parent || parent.userId !== userId)
+        return error(res, 404, "Parent folder not found");
+
       level = parent.level + 1;
+
       if (level >= maxNesting)
         return error(res, 400, "Max nesting level reached");
     }
 
     const folder = await prisma.folder.create({
-      data: { name, parentId, userId, level },
+      data: {
+        name,
+        parentId,
+        userId,
+        level,
+        userSubscriptionId: activeSub.id,
+      },
     });
+
     return success(res, 201, "Folder created", folder);
   } catch (err) {
     console.error(err);
@@ -149,36 +246,98 @@ export const deleteFolder = async (req, res) => {
   }
 };
 
-// ─── CREATE FILE ─────────────
+// ─── CREATE FILE / UPLOAD ─────────────
 export const uploadFile = async (req, res) => {
   try {
     const userId = req.user.id;
     const { folderId, name, url, publicId, format, sizeMB } = req.body;
 
-    const userSubscription = await prisma.userSubscription.findFirst({
+    // Get active subscription and check expiry (30 days)
+    let activeSub = await prisma.userSubscription.findFirst({
       where: { userId, status: "active" },
       include: { subscription: true },
+      orderBy: { startDate: "desc" },
     });
-    if (!userSubscription) return error(res, 403, "No active subscription");
 
-    const { allowedTypes, totalFileLimit, filesPerFolder, maxFileSizeMB } =
-      userSubscription.subscription;
+    if (!activeSub) return error(res, 403, "No active subscription");
 
+    // ─── CHECK EXPIRY ─────────
+    const now = new Date();
+    const startDate = new Date(activeSub.startDate);
+    const diffDays = Math.ceil((now - startDate) / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 30) {
+      await prisma.userSubscription.update({
+        where: { id: activeSub.id },
+        data: { status: "expired", endDate: now },
+      });
+      return error(res, 403, "Subscription expired. Please renew your plan.");
+    }
+
+    const {
+      allowedTypes,
+      totalFileLimit,
+      filesPerFolder,
+      maxFileSizeMB,
+      priceMonthly,
+    } = activeSub.subscription;
+
+    // ✅ Validate type
     if (!allowedTypes.includes(format.toLowerCase()))
       return error(res, 400, "File type not allowed");
+
+    // ✅ Validate size
     if (sizeMB > maxFileSizeMB)
       return error(res, 400, "File size exceeds limit");
 
-    const totalFiles = await prisma.file.count({ where: { userId } });
-    if (totalFiles >= totalFileLimit)
-      return error(res, 400, "Total file limit reached");
+    let totalFiles = 0;
+    let folderFiles = 0;
 
-    const folderFiles = await prisma.file.count({ where: { folderId } });
+    if (priceMonthly === 0) {
+      const freeSubs = await prisma.userSubscription.findMany({
+        where: {
+          userId,
+          subscription: { priceMonthly: 0 },
+        },
+        select: { id: true },
+      });
+
+      const freeSubIds = freeSubs.map((sub) => sub.id);
+
+      totalFiles = await prisma.file.count({
+        where: { userSubscriptionId: { in: freeSubIds } },
+      });
+
+      folderFiles = await prisma.file.count({
+        where: { folderId, userSubscriptionId: { in: freeSubIds } },
+      });
+    } else {
+      totalFiles = await prisma.file.count({
+        where: { userSubscriptionId: activeSub.id },
+      });
+
+      folderFiles = await prisma.file.count({
+        where: { folderId, userSubscriptionId: activeSub.id },
+      });
+    }
+
+    if (totalFiles >= totalFileLimit)
+      return error(res, 400, "Total file limit reached for current plan");
+
     if (folderFiles >= filesPerFolder)
       return error(res, 400, "Folder file limit reached");
 
     const file = await prisma.file.create({
-      data: { name, url, publicId, format, sizeMB, folderId, userId },
+      data: {
+        name,
+        url,
+        publicId,
+        format,
+        sizeMB,
+        folderId,
+        userId,
+        userSubscriptionId: activeSub.id,
+      },
     });
 
     return success(res, 201, "File uploaded", file);
@@ -225,7 +384,7 @@ export const deleteFile = async (req, res) => {
   }
 };
 
-// ─── GET USER FOLDERS & FILES ─────────────
+// ─── GET USER FOLDERS & FILES FOR ALL SUBSCRIPTIONS ─────────────
 export const getFoldersAndFiles = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -241,33 +400,144 @@ export const getFoldersAndFiles = async (req, res) => {
   }
 };
 
+// GET USER FOLDER AND FILES FOR ACTIVE SUBSCRIPTION
+export const getActivePlanFilesAndFolders = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Get active subscription
+    const activeSub = await prisma.userSubscription.findFirst({
+      where: { userId, status: "active" },
+      include: { subscription: true },
+      orderBy: { startDate: "desc" },
+    });
+
+    if (!activeSub) return error(res, 403, "No active subscription");
+
+    const { priceMonthly } = activeSub.subscription;
+
+    let subscriptionIds = [];
+
+    // ✅ If FREE plan → include ALL free subscriptions
+    if (priceMonthly === 0) {
+      const freeSubs = await prisma.userSubscription.findMany({
+        where: {
+          userId,
+          subscription: { priceMonthly: 0 },
+        },
+        select: { id: true },
+      });
+
+      subscriptionIds = freeSubs.map((sub) => sub.id);
+    } else {
+      // ✅ Paid plan → only current subscription
+      subscriptionIds = [activeSub.id];
+    }
+
+    // Fetch folders and files for selected subscription IDs
+    const folders = await prisma.folder.findMany({
+      where: {
+        userSubscriptionId: { in: subscriptionIds },
+      },
+      include: {
+        subfolders: true,
+        files: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return success(res, 200, "Active plan folders & files fetched", folders);
+  } catch (err) {
+    console.error(err);
+    return error(res, 500, "Internal server error");
+  }
+};
+
+// CHECK FILE LIMITS
 export const checkFileLimits = async (req, res) => {
-  const userId = req.user.id;
-  const { format, sizeMB, folderId } = req.query;
+  try {
+    const userId = req.user.id;
+    const { format, sizeMB, folderId } = req.query;
 
-  const userSubscription = await prisma.userSubscription.findFirst({
-    where: { userId, status: "active" },
-    include: { subscription: true },
-  });
-  if (!userSubscription) return error(res, 403, "No active subscription");
+    const activeSub = await prisma.userSubscription.findFirst({
+      where: { userId, status: "active" },
+      include: { subscription: true },
+      orderBy: { startDate: "desc" },
+    });
 
-  const { allowedTypes, totalFileLimit, filesPerFolder, maxFileSizeMB } =
-    userSubscription.subscription;
+    if (!activeSub) return error(res, 403, "No active subscription");
 
-  if (!allowedTypes.includes(format.toLowerCase()))
-    return error(res, 400, `File type "${format}" is not allowed on your plan`);
-  if (parseFloat(sizeMB) > maxFileSizeMB)
-    return error(res, 400, `File exceeds your ${maxFileSizeMB}MB limit`);
+    const {
+      allowedTypes,
+      totalFileLimit,
+      filesPerFolder,
+      maxFileSizeMB,
+      priceMonthly,
+    } = activeSub.subscription;
 
-  const totalFiles = await prisma.file.count({ where: { userId } });
-  if (totalFiles >= totalFileLimit)
-    return error(res, 400, `Total file limit reached (${totalFileLimit} max)`);
+    // ✅ Validate type
+    if (!allowedTypes.includes(format.toLowerCase()))
+      return error(res, 400, `File type "${format}" not allowed`);
 
-  const folderFiles = await prisma.file.count({ where: { folderId } });
-  if (folderFiles >= filesPerFolder)
-    return error(res, 400, `Folder is full (${filesPerFolder} files max)`);
+    // ✅ Validate size
+    if (parseFloat(sizeMB) > maxFileSizeMB)
+      return error(res, 400, `File exceeds ${maxFileSizeMB}MB limit`);
 
-  return success(res, 200, "File allowed", { allowed: true });
+    let totalFiles = 0;
+    let folderFiles = 0;
+
+    // ✅ FREE plan → check across ALL free subscriptions
+    if (priceMonthly === 0) {
+      const freeSubs = await prisma.userSubscription.findMany({
+        where: {
+          userId,
+          subscription: { priceMonthly: 0 },
+        },
+        select: { id: true },
+      });
+
+      const freeSubIds = freeSubs.map((sub) => sub.id);
+
+      totalFiles = await prisma.file.count({
+        where: {
+          userSubscriptionId: { in: freeSubIds },
+        },
+      });
+
+      folderFiles = await prisma.file.count({
+        where: {
+          folderId,
+          userSubscriptionId: { in: freeSubIds },
+        },
+      });
+    } else {
+      // ✅ Paid plan → only current subscription
+      totalFiles = await prisma.file.count({
+        where: { userSubscriptionId: activeSub.id },
+      });
+
+      folderFiles = await prisma.file.count({
+        where: {
+          folderId,
+          userSubscriptionId: activeSub.id,
+        },
+      });
+    }
+
+    // ✅ Total file limit check
+    if (totalFiles >= totalFileLimit)
+      return error(res, 400, `Total file limit reached`);
+
+    // ✅ Folder file limit check
+    if (folderFiles >= filesPerFolder) return error(res, 400, `Folder is full`);
+
+    return success(res, 200, "File allowed", { allowed: true });
+  } catch (err) {
+    console.error(err);
+    return error(res, 500, "Internal server error");
+  }
 };
 
 // ─── GET ALL ACTIVE SUBSCRIPTION PLANS ─────────────

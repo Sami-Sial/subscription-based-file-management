@@ -82,6 +82,8 @@ model UserSubscription {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  File      File[]
+  Folder    Folder[]
 
   @@index([userId])
   @@index([subscriptionId])
@@ -98,6 +100,9 @@ model Folder {
   userId String @db.Uuid
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  userSubscriptionId String           @db.Uuid
+  userSubscription   UserSubscription @relation(fields: [userSubscriptionId], references: [id])
+
   level Int @default(0)
 
   files File[]
@@ -105,9 +110,8 @@ model Folder {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([parentId])
   @@index([userId])
-  @@index([userId, parentId])
+  @@index([userSubscriptionId])
 }
 
 model File {
@@ -125,10 +129,13 @@ model File {
   userId String @db.Uuid
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  userSubscriptionId String           @db.Uuid
+  userSubscription   UserSubscription @relation(fields: [userSubscriptionId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([folderId])
-  @@index([userId, folderId])
+  @@index([userSubscriptionId])
 }

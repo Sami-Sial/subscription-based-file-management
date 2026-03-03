@@ -726,7 +726,8 @@ export default function AdminDashboard() {
                   </p>
                 ) : (
                   recentUsers.map((user, i) => {
-                    const activePlan = user.subscriptions?.[0]?.subscription;
+                    // ✅ FIXED: was user.subscriptions?.[0], must match backend relation name
+                    const activePlan = user.UserSubscription?.[0]?.subscription;
                     const avatarColors = [
                       C.indigo,
                       C.violet,

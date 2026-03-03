@@ -57,8 +57,6 @@ export default function UserManagement() {
     total: users.length,
     active: users.filter((user) => user.isActive !== false).length,
     inactive: users.filter((user) => user.isActive === false).length,
-    subscribed: users.filter((user) => user.subscription || user.subscriptionId)
-      .length,
   };
 
   // Format date
@@ -147,8 +145,8 @@ export default function UserManagement() {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Stats Cards — 3 cards only */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
             {
               label: "Total Users",
@@ -159,33 +157,24 @@ export default function UserManagement() {
               border: "border-blue-100",
               gradient: "from-blue-500/10 to-transparent",
             },
-            {
-              label: "Active Users",
-              value: stats.active,
-              icon: UserCheck,
-              color: "text-emerald-600",
-              bg: "bg-emerald-50",
-              border: "border-emerald-100",
-              gradient: "from-emerald-500/10 to-transparent",
-            },
-            {
-              label: "Inactive Users",
-              value: stats.inactive,
-              icon: UserX,
-              color: "text-gray-600",
-              bg: "bg-gray-50",
-              border: "border-gray-100",
-              gradient: "from-gray-500/10 to-transparent",
-            },
-            {
-              label: "Subscribed Users",
-              value: stats.subscribed,
-              icon: Crown,
-              color: "text-violet-600",
-              bg: "bg-violet-50",
-              border: "border-violet-100",
-              gradient: "from-violet-500/10 to-transparent",
-            },
+            // {
+            //   label: "Active Users",
+            //   value: stats.active,
+            //   icon: UserCheck,
+            //   color: "text-emerald-600",
+            //   bg: "bg-emerald-50",
+            //   border: "border-emerald-100",
+            //   gradient: "from-emerald-500/10 to-transparent",
+            // },
+            // {
+            //   label: "Inactive Users",
+            //   value: stats.inactive,
+            //   icon: UserX,
+            //   color: "text-gray-600",
+            //   bg: "bg-gray-50",
+            //   border: "border-gray-100",
+            //   gradient: "from-gray-500/10 to-transparent",
+            // },
           ].map(({ label, value, icon: Icon, color, bg, border, gradient }) => (
             <div
               key={label}
@@ -301,14 +290,7 @@ export default function UserManagement() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gradient-to-r from-gray-50 to-gray-50/50 border-b border-gray-100">
-                    {[
-                      "User",
-                      "Email",
-                      "Joined",
-                      "Subscription",
-                      "Status",
-                      "Actions",
-                    ].map((h) => (
+                    {["User", "Email", "Joined", "Actions"].map((h) => (
                       <th
                         key={h}
                         className="px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-widest text-gray-500"
@@ -354,36 +336,6 @@ export default function UserManagement() {
                             {formatDate(user.createdAt || user.joinedAt)}
                           </span>
                         </div>
-                      </td>
-                      <td className="px-5 py-4">
-                        {user.subscription?.name || user.subscriptionName ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200 rounded-lg text-xs font-bold text-violet-700 shadow-sm">
-                            <Crown size={12} />
-                            {user.subscription?.name || user.subscriptionName}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-semibold text-gray-500">
-                            Free
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-5 py-4">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border shadow-sm ${
-                            user.isActive !== false
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              : "bg-gray-50 text-gray-500 border-gray-200"
-                          }`}
-                        >
-                          <div
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              user.isActive !== false
-                                ? "bg-emerald-500"
-                                : "bg-gray-400"
-                            }`}
-                          />
-                          {user.isActive !== false ? "Active" : "Inactive"}
-                        </span>
                       </td>
                       <td className="px-5 py-4">
                         <button
@@ -441,7 +393,13 @@ export default function UserManagement() {
                       Free
                     </span>
                     <span className="text-xs text-gray-500">
-                      ({stats.total - stats.subscribed})
+                      (
+                      {
+                        users.filter(
+                          (u) => !u.subscription && !u.subscriptionId
+                        ).length
+                      }
+                      )
                     </span>
                   </div>
                 </div>

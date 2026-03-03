@@ -434,7 +434,9 @@ export default function PricingPage() {
     setActionLoading(plan.id);
     try {
       const isPaid = Number(plan.priceMonthly) > 0;
-      const endpoint = isPaid ? "/api/stripe/payment" : "/api/user/subscribe";
+      const endpoint = isPaid
+        ? "/api/stripe/payment"
+        : "/api/user/subscribe-free";
       const res = await fetch(`${BASE}${endpoint}`, {
         method: "POST",
         headers: {

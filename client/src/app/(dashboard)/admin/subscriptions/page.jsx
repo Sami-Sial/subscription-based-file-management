@@ -56,6 +56,8 @@ function FileTypeBadge({ label, color }) {
 }
 
 function FormFields({ data, onChange, onToggle }) {
+  const isNestingInvalid = data.maxNesting > data.maxFolders;
+
   return (
     <div className="space-y-6">
       {/* Identification */}
@@ -84,24 +86,31 @@ function FormFields({ data, onChange, onToggle }) {
               value={data.maxFolders}
               onChange={onChange}
               className={inputClass}
+              min="1"
               required
             />
           </div>
           <div>
             <label className={labelClass}>Nesting Level</label>
-            <select
+            <input
+              type="number"
               name="maxNesting"
               value={data.maxNesting}
               onChange={onChange}
-              className={inputClass + " cursor-pointer bg-white"}
+              className={`${inputClass} ${
+                isNestingInvalid
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
+                  : ""
+              }`}
+              min="1"
               required
-            >
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
-                <option key={n} value={n}>
-                  {n} Level{n > 1 ? "s" : ""}
-                </option>
-              ))}
-            </select>
+            />
+            {isNestingInvalid && (
+              <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1.5">
+                <AlertCircle size={12} />
+                Nesting level cannot exceed max folders ({data.maxFolders})
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -144,6 +153,7 @@ function FormFields({ data, onChange, onToggle }) {
               value={data.maxFileSizeMB}
               onChange={onChange}
               className={inputClass + " pr-14"}
+              min="1"
               required
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-semibold">
@@ -168,6 +178,7 @@ function FormFields({ data, onChange, onToggle }) {
               onChange={onChange}
               placeholder="e.g. 10000"
               className={inputClass}
+              min="1"
               required
             />
           </div>
@@ -179,6 +190,7 @@ function FormFields({ data, onChange, onToggle }) {
               value={data.filesPerFolder}
               onChange={onChange}
               className={inputClass}
+              min="1"
               required
             />
           </div>
@@ -204,6 +216,7 @@ function FormFields({ data, onChange, onToggle }) {
               placeholder="0.00"
               className={inputClass + " pl-8"}
               step="0.01"
+              min="0"
             />
           </div>
         </div>
@@ -339,8 +352,20 @@ export default function SubscriptionManagement() {
     allowedTypes: buildAllowedTypes(fileTypes),
   });
 
+  // Validation function
+  const validateForm = (data) => {
+    if (data.maxNesting > data.maxFolders) {
+      toast.error("Nesting level cannot exceed max folders");
+      return false;
+    }
+    return true;
+  };
+
   const handleCreate = async (e) => {
     e.preventDefault();
+
+    if (!validateForm(formData)) return;
+
     setFormLoading(true);
     try {
       const response = await fetch(
@@ -386,6 +411,9 @@ export default function SubscriptionManagement() {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
+
+    if (!validateForm(updateFormData)) return;
+
     setFormLoading(true);
     try {
       const response = await fetch(
@@ -744,7 +772,9 @@ export default function SubscriptionManagement() {
               </button>
               <button
                 type="submit"
-                disabled={formLoading}
+                disabled={
+                  formLoading || formData.maxNesting > formData.maxFolders
+                }
                 className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold transition-all shadow-lg shadow-blue-600/25 cursor-pointer"
               >
                 {formLoading ? (
@@ -806,7 +836,10 @@ export default function SubscriptionManagement() {
                 </button>
                 <button
                   type="submit"
-                  disabled={formLoading}
+                  disabled={
+                    formLoading ||
+                    updateFormData.maxNesting > updateFormData.maxFolders
+                  }
                   className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold transition-all shadow-lg shadow-blue-600/25 cursor-pointer"
                 >
                   {formLoading ? (

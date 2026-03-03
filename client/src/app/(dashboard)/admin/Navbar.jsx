@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Search, Menu, X, Settings, LogOut, Folder } from "lucide-react";
+import { motion } from "framer-motion";
+import { Menu, Settings, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function Navbar({ onMenuToggle }) {
-  const [searchOpen, setSearchOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -43,49 +42,9 @@ export default function Navbar({ onMenuToggle }) {
         <Menu size={18} />
       </motion.button>
 
-      {/* Search */}
-      <div className="flex-1 relative">
-        <div className="hidden sm:block relative">
-          <Search
-            size={13}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-          />
-          <input
-            placeholder="Search packages or users..."
-            className="w-full max-w-[360px] pl-8 pr-4 py-2 text-[12px] text-gray-900 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-indigo-300 focus:ring-1 focus:ring-indigo-100 placeholder-gray-400 transition-all"
-          />
-        </div>
-
-        <div className="flex sm:hidden items-center gap-2">
-          <AnimatePresence>
-            {searchOpen && (
-              <motion.div
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: "100%" }}
-                exit={{ opacity: 0, width: 0 }}
-                className="relative overflow-hidden"
-              >
-                <Search
-                  size={13}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                />
-                <input
-                  autoFocus
-                  placeholder="Search..."
-                  className="w-full pl-8 pr-4 py-2 text-[12px] text-gray-900 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-indigo-300 placeholder-gray-400 transition-all"
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setSearchOpen(!searchOpen)}
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors shrink-0"
-          >
-            {searchOpen ? <X size={16} /> : <Search size={16} />}
-          </motion.button>
-        </div>
+      {/* Welcome Text */}
+      <div className="flex-1">
+        <p className="text-lg font-extrabold">Welcome back 👋</p>
       </div>
 
       {/* Right actions */}
