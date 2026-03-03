@@ -133,7 +133,6 @@ export default function Register() {
 
   return (
     <>
-      <Toaster position="top-center" />
       <div className="min-h-screen bg-white flex flex-col">
         {/* Main Content */}
         <main className="flex flex-1 items-center justify-center px-4 py-8">
