@@ -1,24 +1,23 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import Loader from "@/components/Loader";
 import PlanModal from "./PlanModal";
 import { toast } from "react-hot-toast";
-
 export default function Page({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [subscriptions, setSubscriptions] = useState([]);
+  const [subscriptions, setSubscriptions] = useState([]); // full history array
   const [subscriptionLoading, setSubscriptionLoading] = useState(true);
   const [showPlanModal, setShowPlanModal] = useState(false);
 
+  // Derive the active subscription from the array
   const activeSubscription =
     subscriptions.find((s) => s.status === "active") || null;
 
-  // --- Fetch user ---
   useEffect(() => {
     const checkUser = async () => {
       try {
@@ -58,50 +57,51 @@ export default function Page({ children }) {
     checkUser();
   }, []);
 
-  // --- Fetch subscriptions (extracted for reuse) ---
-  const fetchSubscriptions = useCallback(async () => {
+  // Check subscription after user is loaded
+  useEffect(() => {
     if (!user) return;
-    setSubscriptionLoading(true);
 
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/user/my-subscriptions`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+    const checkSubscription = async () => {
+      setSubscriptionLoading(true);
+      try {
+        const token = localStorage.getItem("token");
+
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/user/my-subscriptions`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+        console.log(data);
+
+        if (!response.ok || !data.data) {
+          setSubscriptions([]);
+          setShowPlanModal(true);
+          return;
         }
-      );
 
-      const data = await response.json();
+        const allSubs = Array.isArray(data.data) ? data.data : [data.data];
+        setSubscriptions(allSubs);
 
-      if (!response.ok || !data.data) {
+        const hasActive = allSubs.some((s) => s.status === "active");
+        setShowPlanModal(!hasActive);
+      } catch (err) {
+        console.error("Subscription check error:", err);
         setSubscriptions([]);
         setShowPlanModal(true);
-        return;
+      } finally {
+        setSubscriptionLoading(false);
       }
+    };
 
-      const allSubs = Array.isArray(data.data) ? data.data : [data.data];
-      setSubscriptions(allSubs);
-
-      const hasActive = allSubs.some((s) => s.status === "active");
-      setShowPlanModal(!hasActive);
-    } catch (err) {
-      console.error("Subscription check error:", err);
-      setSubscriptions([]);
-      setShowPlanModal(true);
-    } finally {
-      setSubscriptionLoading(false);
-    }
+    checkSubscription();
   }, [user]);
-
-  // --- Run subscription check when user loads ---
-  useEffect(() => {
-    fetchSubscriptions();
-  }, [user, fetchSubscriptions]);
 
   if (loading || !user || subscriptionLoading) {
     return (
@@ -115,6 +115,7 @@ export default function Page({ children }) {
     <>
       <div className="flex h-screen bg-[#f5f6fa] overflow-hidden">
         <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           <Navbar
             onMenuToggle={() => setMobileOpen((prev) => !prev)}
@@ -122,7 +123,7 @@ export default function Page({ children }) {
           />
 
           <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-6">
-            {/* Inactive subscription banner */}
+            {/* Warning Banner — has subscriptions but none active */}
             {subscriptions.length > 0 && !activeSubscription && (
               <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
                 <svg
@@ -154,7 +155,7 @@ export default function Page({ children }) {
               </div>
             )}
 
-            {/* No subscriptions banner */}
+            {/* Warning Banner — no subscriptions at all */}
             {subscriptions.length === 0 && (
               <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
                 <svg
@@ -191,24 +192,22 @@ export default function Page({ children }) {
         </div>
       </div>
 
-      {/* Plan Modal */}
+      {/* Plan Selection Modal — pass only the active subscription */}
       {showPlanModal && (
         <PlanModal
           isOpen={showPlanModal}
-          onClose={async () => {
-            setShowPlanModal(false);
-            await fetchSubscriptions(); // <-- refetch after closing modal
-          }}
+          onClose={() => setShowPlanModal(false)}
           currentSubscription={activeSubscription}
-          onSubscriptionUpdate={async (newSubscription) => {
+          onSubscriptionUpdate={(newSubscription) => {
+            // Add new subscription to history array and mark it active
             setSubscriptions((prev) => [
+              // expire all previous active ones locally
               ...prev.map((s) =>
                 s.status === "active" ? { ...s, status: "expired" } : s
               ),
               newSubscription,
             ]);
             setShowPlanModal(false);
-            await fetchSubscriptions(); // <-- refetch after update
           }}
         />
       )}
