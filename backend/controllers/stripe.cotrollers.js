@@ -37,8 +37,7 @@ export const stripeSubscribe = async (req, res) => {
         return error(
           res,
           400,
-          `Downgrades are only allowed after your current subscription ends.
-          }`
+          `Downgrades are only allowed after your current subscription ends.`
         );
       }
 
@@ -70,7 +69,11 @@ export const stripeSubscribe = async (req, res) => {
               quantity: 1,
             },
           ],
-          metadata: { userId, subscriptionId },
+          metadata: {
+            userId,
+            subscriptionId,
+            isUpgrade: "true", // Mark as upgrade for webhook handling
+          },
           success_url: `${process.env.FRONTEND_URL}/user/payment-success`,
           cancel_url: `${process.env.FRONTEND_URL}/user/payment-cancel`,
         });
@@ -126,55 +129,128 @@ export const stripeWebhook = async (req, res) => {
   }
 
   try {
-    // ─── PAYMENT SUCCESS / SUBSCRIPTION CREATED ─────────
-    if (
-      event.type === "checkout.session.completed" ||
-      event.type === "customer.subscription.updated"
-    ) {
+    // ==== CHECKOUT COMPLETED (PAYMENT SUCCESS)
+
+    if (event.type === "checkout.session.completed") {
       const session = event.data.object;
 
-      const userId = session.metadata.userId;
-      const subscriptionId = session.metadata.subscriptionId;
-      const stripeSubscriptionId = session.subscription;
-      const stripeCustomerId = session.customer;
+      const userId = session.metadata?.userId;
+      const subscriptionId = session.metadata?.subscriptionId;
+      const isUpgrade = session.metadata?.isUpgrade === "true";
 
-      // Find currently active subscription
-      const activeSub = await prisma.userSubscription.findFirst({
-        where: { userId, status: "active" },
-        orderBy: { startDate: "desc" },
-      });
-
-      // Expire previous subscription if exists and different plan
-      if (activeSub && activeSub.subscriptionId !== subscriptionId) {
-        await prisma.userSubscription.update({
-          where: { id: activeSub.id },
-          data: {
-            status: "expired",
-            endDate: new Date(),
-          },
-        });
+      if (!userId || !subscriptionId) {
+        console.log("Missing metadata in checkout session");
+        return res.json({ received: true });
       }
 
-      // Check if subscription already exists to avoid duplicates
-      const existingSub = await prisma.userSubscription.findFirst({
-        where: { stripeSubscriptionId },
-      });
-      if (!existingSub) {
+      // ─── HANDLE UPGRADE (PAYMENT MODE) ─────────
+      if (session.mode === "payment" && isUpgrade) {
+        // Expire old active subscription
+        const activeSub = await prisma.userSubscription.findFirst({
+          where: { userId, status: "active" },
+          orderBy: { startDate: "desc" },
+        });
+
+        if (activeSub) {
+          await prisma.userSubscription.update({
+            where: { id: activeSub.id },
+            data: {
+              status: "expired",
+              endDate: new Date(),
+            },
+          });
+        }
+
         // Create new subscription record
         await prisma.userSubscription.create({
           data: {
             userId,
             subscriptionId,
-            stripeSubscriptionId,
-            stripeCustomerId,
+            stripeCustomerId: session.customer,
             startDate: new Date(),
             status: "active",
+          },
+        });
+
+        console.log(`Upgrade completed for user ${userId}`);
+        return res.json({ received: true });
+      }
+
+      // ─── HANDLE REGULAR SUBSCRIPTION (SUBSCRIPTION MODE) ─────────
+      if (session.mode === "subscription") {
+        const stripeSubscriptionId = session.subscription;
+        const stripeCustomerId = session.customer;
+
+        if (!stripeSubscriptionId) {
+          console.log("Missing Stripe subscription ID");
+          return res.json({ received: true });
+        }
+
+        // Expire old active subscription
+        const activeSub = await prisma.userSubscription.findFirst({
+          where: { userId, status: "active" },
+          orderBy: { startDate: "desc" },
+        });
+
+        if (activeSub && activeSub.subscriptionId !== subscriptionId) {
+          await prisma.userSubscription.update({
+            where: { id: activeSub.id },
+            data: {
+              status: "expired",
+              endDate: new Date(),
+            },
+          });
+        }
+
+        // Prevent duplicate creation
+        const existingSub = await prisma.userSubscription.findFirst({
+          where: { stripeSubscriptionId },
+        });
+
+        if (!existingSub) {
+          await prisma.userSubscription.create({
+            data: {
+              userId,
+              subscriptionId,
+              stripeSubscriptionId,
+              stripeCustomerId,
+              startDate: new Date(),
+              status: "active",
+            },
+          });
+        }
+
+        console.log(`Subscription created for user ${userId}`);
+        return res.json({ received: true });
+      }
+
+      // If neither upgrade nor subscription mode, just acknowledge
+      return res.json({ received: true });
+    }
+
+    // =======SUBSCRIPTION UPDATED (RENEWAL / PLAN CHANGE)
+
+    if (event.type === "customer.subscription.updated") {
+      const subscription = event.data.object;
+
+      const stripeSubscriptionId = subscription.id;
+
+      const existingSub = await prisma.userSubscription.findFirst({
+        where: { stripeSubscriptionId },
+      });
+
+      if (existingSub) {
+        await prisma.userSubscription.update({
+          where: { id: existingSub.id },
+          data: {
+            status: subscription.status === "active" ? "active" : "expired",
           },
         });
       }
     }
 
-    // ─── SUBSCRIPTION CANCELLED BY USER ─────────
+    // ==== SUBSCRIPTION CANCELLED
+
     if (event.type === "customer.subscription.deleted") {
       const stripeSubscriptionId = event.data.object.id;
 

@@ -6,6 +6,7 @@ import Navbar from "./Navbar";
 import Loader from "@/components/Loader";
 import PlanModal from "./PlanModal";
 import { toast } from "react-hot-toast";
+
 export default function Page({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -57,51 +58,64 @@ export default function Page({ children }) {
     checkUser();
   }, []);
 
+  // Extracted subscription check function that can be called on-demand
+  const checkSubscription = async (showModalOnNoSub = true) => {
+    setSubscriptionLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/user/my-subscriptions`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+      console.log(data);
+
+      if (!response.ok || !data.data) {
+        setSubscriptions([]);
+        if (showModalOnNoSub) {
+          setShowPlanModal(true);
+        }
+        return;
+      }
+
+      const allSubs = Array.isArray(data.data) ? data.data : [data.data];
+      setSubscriptions(allSubs);
+
+      const hasActive = allSubs.some((s) => s.status === "active");
+      if (showModalOnNoSub) {
+        setShowPlanModal(!hasActive);
+      }
+    } catch (err) {
+      console.error("Subscription check error:", err);
+      setSubscriptions([]);
+      if (showModalOnNoSub) {
+        setShowPlanModal(true);
+      }
+    } finally {
+      setSubscriptionLoading(false);
+    }
+  };
+
   // Check subscription after user is loaded
   useEffect(() => {
     if (!user) return;
-
-    const checkSubscription = async () => {
-      setSubscriptionLoading(true);
-      try {
-        const token = localStorage.getItem("token");
-
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/user/my-subscriptions`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const data = await response.json();
-        console.log(data);
-
-        if (!response.ok || !data.data) {
-          setSubscriptions([]);
-          setShowPlanModal(true);
-          return;
-        }
-
-        const allSubs = Array.isArray(data.data) ? data.data : [data.data];
-        setSubscriptions(allSubs);
-
-        const hasActive = allSubs.some((s) => s.status === "active");
-        setShowPlanModal(!hasActive);
-      } catch (err) {
-        console.error("Subscription check error:", err);
-        setSubscriptions([]);
-        setShowPlanModal(true);
-      } finally {
-        setSubscriptionLoading(false);
-      }
-    };
-
     checkSubscription();
   }, [user]);
+
+  // Handle modal close with refresh
+  const handleModalClose = () => {
+    setShowPlanModal(false);
+    // Refetch subscription data to update banner
+    checkSubscription(false); // false = don't auto-show modal again
+  };
 
   if (loading || !user || subscriptionLoading) {
     return (
@@ -196,7 +210,7 @@ export default function Page({ children }) {
       {showPlanModal && (
         <PlanModal
           isOpen={showPlanModal}
-          onClose={() => setShowPlanModal(false)}
+          onClose={handleModalClose}
           currentSubscription={activeSubscription}
           onSubscriptionUpdate={(newSubscription) => {
             // Add new subscription to history array and mark it active
@@ -207,7 +221,7 @@ export default function Page({ children }) {
               ),
               newSubscription,
             ]);
-            setShowPlanModal(false);
+            handleModalClose();
           }}
         />
       )}

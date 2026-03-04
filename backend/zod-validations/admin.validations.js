@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // ID param validation
 export const idParamSchema = z.object({
-  id: z.string().regex(/^\d+$/, "Invalid ID"),
+  id: z.string().uuid("Invalid UUID"),
 });
 
 // CREATE SUBSCRIPTION validation

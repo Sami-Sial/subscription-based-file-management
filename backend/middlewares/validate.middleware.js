@@ -29,6 +29,7 @@ export const validateParams = (schema) => (req, res, next) => {
     req.params = schema.parse(req.params);
     next();
   } catch (error) {
+    console.log(error);
     if (error instanceof ZodError) {
       const formattedErrors = error.issues.map((err) => ({
         field: err.path.join("."),

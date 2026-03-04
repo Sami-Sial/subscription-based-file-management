@@ -75,7 +75,7 @@ export const getSubscriptionById = async (req, res, next) => {
 export const updateSubscription = async (req, res, next) => {
   try {
     const id = parseInt(req.params.id);
-
+    console.log("id", id);
     // Check existence first (important for clean 404)
     const existing = await prisma.subscription.findUnique({
       where: { id },

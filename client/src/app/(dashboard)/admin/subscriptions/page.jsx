@@ -413,7 +413,7 @@ export default function SubscriptionManagement() {
     e.preventDefault();
 
     if (!validateForm(updateFormData)) return;
-
+    console.log(selectedSubscription.id);
     setFormLoading(true);
     try {
       const response = await fetch(
