@@ -55,8 +55,7 @@ export const getAllSubscriptions = async (req, res, next) => {
 /* ========================= GET SINGLE SUBSCRIPTION ========================= */
 export const getSubscriptionById = async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
-
+    const id = req.params.id;
     const subscription = await prisma.subscription.findUnique({
       where: { id },
     });
@@ -74,8 +73,7 @@ export const getSubscriptionById = async (req, res, next) => {
 /* ========================= UPDATE SUBSCRIPTION ========================= */
 export const updateSubscription = async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
-    console.log("id", id);
+    const id = req.params.id;
     // Check existence first (important for clean 404)
     const existing = await prisma.subscription.findUnique({
       where: { id },
@@ -99,7 +97,7 @@ export const updateSubscription = async (req, res, next) => {
 /* ========================= DELETE SUBSCRIPTION ========================= */
 export const deleteSubscription = async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = req.params.id;
 
     const existing = await prisma.subscription.findUnique({
       where: { id },
@@ -146,7 +144,7 @@ export const getAllUsers = async (req, res, next) => {
 /* ========================= DELETE USER BY ID ========================= */
 export const deleteUserById = async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = req.params.id;
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({

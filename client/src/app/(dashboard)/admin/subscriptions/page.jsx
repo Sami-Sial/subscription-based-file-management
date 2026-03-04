@@ -415,6 +415,9 @@ export default function SubscriptionManagement() {
     if (!validateForm(updateFormData)) return;
     console.log(selectedSubscription.id);
     setFormLoading(true);
+    console.log(
+      `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/admin/subscriptions/${selectedSubscription.id}`
+    );
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/admin/subscriptions/${selectedSubscription.id}`,

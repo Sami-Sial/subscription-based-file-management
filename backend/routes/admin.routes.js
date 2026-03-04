@@ -1,6 +1,6 @@
 // routes/admin.routes.js
 import express from "express";
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 import * as controller from "../controllers/admin.controllers.js";
 
