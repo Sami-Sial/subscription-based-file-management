@@ -127,7 +127,7 @@ export default function Page({ children }) {
 
   return (
     <>
-      <div className="flex h-screen bg-[#f5f6fa] overflow-hidden">
+      <div className="flex h-screen fc-canvas overflow-hidden">
         <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
 
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">

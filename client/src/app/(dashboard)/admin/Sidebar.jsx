@@ -3,22 +3,21 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Package, Users, BarChart2, Settings, Home, X } from "lucide-react";
+import {
+  Package,
+  Users,
+  Settings,
+  LayoutDashboard,
+  X,
+  ShieldCheck,
+} from "lucide-react";
+import Logo from "@/components/Logo";
 
 const navItems = [
-  { label: "Dashboard", icon: <Home size={15} />, href: "/admin/dashboard" },
-  {
-    label: "Subscriptions",
-    icon: <Package size={15} />,
-    href: "/admin/subscriptions",
-  },
-  { label: "User Management", icon: <Users size={15} />, href: "/admin/users" },
-  // {
-  //   label: "Analytics",
-  //   icon: <BarChart2 size={15} />,
-  //   href: "/admin/analytics",
-  // },
-  { label: "Settings", icon: <Settings size={15} />, href: "/admin/settings" },
+  { label: "Dashboard", icon: LayoutDashboard, href: "/admin/dashboard" },
+  { label: "Subscriptions", icon: Package, href: "/admin/subscriptions" },
+  { label: "Users", icon: Users, href: "/admin/users" },
+  { label: "Settings", icon: Settings, href: "/admin/settings" },
 ];
 
 function SidebarContent({ onClose }) {
@@ -26,30 +25,48 @@ function SidebarContent({ onClose }) {
 
   return (
     <>
-      {/* Logo */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100 shrink-0">
-        <Link href="/user/dashboard" className="flex items-center gap-2 group">
-          <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-md group-hover:bg-indigo-700 transition">
-            <Home size={18} className="text-white" />
-          </div>
-          <span className="text-xl font-extrabold text-gray-900 tracking-wide">
-            Admin Console
-          </span>
-        </Link>
-
+      {/* Brand */}
+      <div
+        className="flex items-center justify-between px-5 h-16 shrink-0 border-b"
+        style={{ borderColor: "var(--border-subtle)" }}
+      >
+        <Logo size={32} href="/admin/dashboard" />
         {onClose && (
           <button
             onClick={onClose}
-            className="p-2 rounded-lg bg-gray-100 text-gray-500 transition lg:hidden"
+            className="w-8 h-8 inline-flex items-center justify-center fc-btn-ghost rounded-lg lg:hidden"
+            aria-label="Close"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         )}
       </div>
 
-      {/* Nav links */}
-      <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+      {/* Role pill */}
+      <div className="px-5 py-4 shrink-0">
+        <div
+          className="flex items-center gap-2 px-3 py-2 rounded-xl"
+          style={{
+            background: "var(--accent-soft)",
+            border: "1px solid var(--accent-ring)",
+          }}
+        >
+          <ShieldCheck size={14} className="fc-accent" />
+          <div className="min-w-0">
+            <p className="text-[10px] font-black uppercase tracking-widest fc-accent">
+              Admin console
+            </p>
+            <p className="text-[11px] fc-text-tertiary truncate">
+              Full platform control
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
+          const Icon = item.icon;
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + "/");
 
@@ -58,37 +75,52 @@ function SidebarContent({ onClose }) {
               key={item.label}
               href={item.href}
               onClick={onClose ?? undefined}
+              data-testid={`admin-nav-${item.label.toLowerCase()}`}
             >
               <motion.div
-                whileHover={{ x: 4 }}
-                whileTap={{ scale: 0.97 }}
-                className={`relative flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-medium transition-all cursor-pointer
-                ${
-                  isActive
-                    ? "bg-indigo-50 text-indigo-700 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                whileHover={{ x: 3 }}
+                whileTap={{ scale: 0.98 }}
+                className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-colors ${
+                  isActive ? "fc-text" : "fc-text-tertiary hover:fc-text"
                 }`}
+                style={
+                  isActive
+                    ? {
+                        background: "var(--bg-surface-2)",
+                      }
+                    : {}
+                }
               >
-                {/* Active Left Border */}
                 {isActive && (
                   <motion.div
-                    layoutId="active-bar"
-                    className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-indigo-600"
+                    layoutId="admin-active-bar"
+                    className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full"
+                    style={{ background: "var(--accent)" }}
                   />
                 )}
-
-                <span
-                  className={isActive ? "text-indigo-600" : "text-gray-400"}
-                >
-                  {item.icon}
-                </span>
-
+                <Icon
+                  size={16}
+                  style={{
+                    color: isActive ? "var(--accent)" : "var(--text-muted)",
+                  }}
+                />
                 {item.label}
               </motion.div>
             </Link>
           );
         })}
       </nav>
+
+      {/* Bottom info */}
+      <div
+        className="px-5 py-4 border-t shrink-0"
+        style={{ borderColor: "var(--border-subtle)" }}
+      >
+        <p className="text-[10px] font-black uppercase tracking-widest fc-text-muted mb-1">
+          Version
+        </p>
+        <p className="text-xs fc-text-secondary font-mono">FileCloud v1.0</p>
+      </div>
     </>
   );
 }
@@ -96,17 +128,16 @@ function SidebarContent({ onClose }) {
 export default function Sidebar({ mobileOpen, setMobileOpen }) {
   return (
     <>
-      {/* Desktop Sidebar */}
-      <motion.aside
-        initial={{ x: -240 }}
-        animate={{ x: 0 }}
-        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="hidden lg:flex w-[250px] bg-white border-r border-gray-100 flex-col shrink-0 h-screen sticky top-0 shadow-sm"
+      <aside
+        className="hidden lg:flex w-[240px] flex-col shrink-0 h-screen sticky top-0 border-r"
+        style={{
+          background: "var(--bg-surface)",
+          borderColor: "var(--border-subtle)",
+        }}
       >
         <SidebarContent onClose={null} />
-      </motion.aside>
+      </aside>
 
-      {/* Mobile Drawer */}
       <AnimatePresence>
         {mobileOpen && (
           <>
@@ -115,15 +146,19 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileOpen(false)}
-              className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden"
+              className="fixed inset-0 z-40 lg:hidden"
+              style={{ background: "rgba(10, 14, 28, 0.5)", backdropFilter: "blur(4px)" }}
             />
-
             <motion.aside
-              initial={{ x: -260 }}
+              initial={{ x: -280 }}
               animate={{ x: 0 }}
-              exit={{ x: -260 }}
-              transition={{ duration: 0.3 }}
-              className="fixed top-0 left-0 h-full w-[300px] bg-white border-r border-gray-100 flex flex-col z-50 lg:hidden shadow-lg"
+              exit={{ x: -280 }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              className="fixed top-0 left-0 h-full w-[280px] flex flex-col z-50 lg:hidden fc-shadow-lg"
+              style={{
+                background: "var(--bg-surface)",
+                borderRight: "1px solid var(--border-subtle)",
+              }}
             >
               <SidebarContent onClose={() => setMobileOpen(false)} />
             </motion.aside>
