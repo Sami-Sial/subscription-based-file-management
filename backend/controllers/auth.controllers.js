@@ -4,7 +4,7 @@ import crypto from "crypto";
 
 import { addMinutes, generateOTP } from "../lib/otp.js";
 import { success, error } from "../lib/response.js";
-import { sendMail } from "../lib/mailer.js";
+import { sendTemplateMail } from "../lib/mailer.js";
 import { generateToken } from "../lib/jwt.js";
 
 /* ========================= SIGNUP ========================= */
@@ -32,12 +32,11 @@ export const signup = async (req, res) => {
     });
     console.log(createdUser);
 
-    const mailSent = await sendMail({
+    const mailSent = await sendTemplateMail({
       to: email,
       subject: "Verify Your Email",
-      html: `<p>Hello ${name},</p>
-             <p>Your OTP is: <b>${otp}</b></p>
-             <p>Expires in 10 minutes.</p>`,
+      templateName: "verify-email",
+      templateData: { name, otp },
     });
 
     if (!mailSent) return error(res, 500, "Failed to send verification email");
@@ -118,10 +117,11 @@ export const resendOtp = async (req, res) => {
       },
     });
 
-    await sendMail({
+    await sendTemplateMail({
       to: email,
       subject: "Your OTP Code",
-      html: `<p>Your OTP: <b>${otp}</b></p>`,
+      templateName: "verify-email",
+      templateData: { name: user.name || "User", otp },
     });
 
     return success(res, 200, "OTP resent successfully");
@@ -161,10 +161,11 @@ export const login = async (req, res) => {
         },
       });
 
-      await sendMail({
+      await sendTemplateMail({
         to: email,
         subject: "Verify your account",
-        html: `Your OTP: ${otp}`,
+        templateName: "verify-email",
+        templateData: { name: user.name || "User", otp },
       });
 
       return error(res, 403, "Account not verified. OTP sent.");
@@ -283,16 +284,11 @@ export const forgotPassword = async (req, res) => {
     const resetLink = `${process.env.FRONTEND_URL}/forgot-password/reset?token=${token}&email=${email}`;
 
     // Send email with reset link
-    const mailSent = await sendMail({
+    const mailSent = await sendTemplateMail({
       to: email,
       subject: "Reset Your Password",
-      html: `
-                <p>Hello ${user.name || "User"},</p>
-                <p>You requested a password reset. Click the link below to reset your password:</p>
-                <p><a href="${resetLink}" target="_blank">${resetLink}</a></p>
-                <p>This link will expire in 15 minutes.</p>
-                <p>If you did not request this, please ignore this email.</p>
-            `,
+      templateName: "reset-password",
+      templateData: { name: user.name || "User", resetUrl: resetLink },
     });
 
     if (!mailSent) return error(res, 500, "Failed to send reset email");
@@ -335,6 +331,14 @@ export const resetPassword = async (req, res) => {
       },
     });
 
+    // Send confirmation email
+    await sendTemplateMail({
+      to: user.email,
+      subject: "Password Changed Successfully",
+      templateName: "password-changed",
+      templateData: { loginUrl: `${process.env.FRONTEND_URL}/login` },
+    });
+
     return success(res, 200, "Password updated successfully");
   } catch (err) {
     console.error("Reset Password Error:", err);
@@ -368,6 +372,14 @@ export const changePassword = async (req, res) => {
     await prisma.user.update({
       where: { id: userId },
       data: { password: hashedPassword },
+    });
+
+    // Send confirmation email
+    await sendTemplateMail({
+      to: user.email,
+      subject: "Password Changed Successfully",
+      templateName: "password-changed",
+      templateData: { loginUrl: `${process.env.FRONTEND_URL}/login` },
     });
 
     return success(res, 200, "Password changed successfully");

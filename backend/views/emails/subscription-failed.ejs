@@ -1,0 +1,15 @@
+<%- include('partials/header') %>
+<div style="text-align: center; margin-bottom: 20px;">
+  <div style="display: inline-block; background-color: #fee2e2; color: #dc2626; padding: 12px; border-radius: 50%;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+  </div>
+</div>
+<h2 style="color: #111827; margin-top: 0; text-align: center;">Subscription Renewal Failed</h2>
+<p>Hi <%= name %>,</p>
+<p>We attempted to renew your <strong><%= planName %></strong> plan, but the payment failed.</p>
+<p>As a result, your subscription has been marked as <strong>expired</strong> and you may lose access to premium features.</p>
+<p>Please update your billing information or subscribe to a new plan to restore your access.</p>
+<div style="text-align: center;">
+  <a href="<%= billingUrl %>" class="button" style="background: linear-gradient(to right, #dc2626, #b91c1c);">Update Billing Details</a>
+</div>
+<%- include('partials/footer') %>

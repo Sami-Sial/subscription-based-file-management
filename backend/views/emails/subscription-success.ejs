@@ -1,0 +1,14 @@
+<%- include('partials/header') %>
+<div style="text-align: center; margin-bottom: 20px;">
+  <div style="display: inline-block; background-color: #d1fae5; color: #059669; padding: 12px; border-radius: 50%;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+  </div>
+</div>
+<h2 style="color: #111827; margin-top: 0; text-align: center;">Subscription Confirmed!</h2>
+<p>Hi <%= name %>,</p>
+<p>Great news! Your <strong><%= planName %></strong> plan has been successfully activated. Thank you for choosing File Cloud.</p>
+<p>You can now enjoy all the premium features included in your plan.</p>
+<div style="text-align: center;">
+  <a href="<%= dashboardUrl %>" class="button">Go to Dashboard</a>
+</div>
+<%- include('partials/footer') %>
