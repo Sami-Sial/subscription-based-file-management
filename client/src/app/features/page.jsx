@@ -168,8 +168,8 @@ export default function FeaturesPage() {
             <Sparkles size={12} /> Features
           </span>
           <h1
-            className="text-4xl md:text-6xl font-extrabold fc-text tracking-tight leading-[1.02] mb-5"
-            style={{ letterSpacing: "-0.03em" }}
+            className="font-extrabold fc-text tracking-tight leading-[1.05] mb-5"
+            style={{ fontSize: "clamp(2.2rem, 4vw, 3.2rem)", letterSpacing: "-0.04em" }}
           >
             Everything you get with{" "}
             <span className="fc-gradient-text">FileCloud.</span>

@@ -66,8 +66,8 @@ export default function AboutPage() {
             <Compass size={12} /> About us
           </span>
           <h1
-            className="text-4xl md:text-6xl font-extrabold fc-text tracking-tight leading-[1.02] mb-6"
-            style={{ letterSpacing: "-0.03em" }}
+            className="font-extrabold fc-text tracking-tight leading-[1.05] mb-6"
+            style={{ fontSize: "clamp(2.2rem, 4vw, 3.2rem)", letterSpacing: "-0.04em" }}
           >
             We build storage that <span className="fc-gradient-text">respects rules.</span>
           </h1>

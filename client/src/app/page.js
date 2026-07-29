@@ -182,75 +182,384 @@ export default function LandingPage() {
       <PublicHeader />
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 fc-grid-bg pointer-events-none opacity-70" />
+      <section className="relative overflow-hidden" style={{ background: "var(--bg-canvas)" }}>
+        {/* Background decorations */}
+        <div className="absolute inset-0 fc-grid-bg pointer-events-none" style={{ opacity: 0.5 }} />
         <div
-          className="absolute -top-32 left-1/2 -translate-x-1/2 w-[720px] h-[720px] rounded-full blur-3xl pointer-events-none"
-          style={{ background: "radial-gradient(circle, var(--accent) 0%, transparent 55%)", opacity: 0.14 }}
+          className="absolute pointer-events-none"
+          style={{
+            top: "-180px",
+            left: "-200px",
+            width: "600px",
+            height: "600px",
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(234,68,8,0.12) 0%, transparent 65%)",
+            filter: "blur(40px)",
+          }}
+        />
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            bottom: "-100px",
+            right: "-100px",
+            width: "500px",
+            height: "500px",
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(10,14,28,0.06) 0%, transparent 65%)",
+            filter: "blur(40px)",
+          }}
         />
 
-        <div className="relative max-w-6xl mx-auto px-6 md:px-10 pt-20 pb-24 md:pt-28 md:pb-32">
-          <div className="flex flex-col items-center text-center gap-7 max-w-4xl mx-auto fc-anim-fadeUp">
-            <span
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-[0.14em] fc-shadow-sm"
-              style={{
-                background: "var(--accent-soft)",
-                color: "var(--accent)",
-                border: "1px solid var(--accent-ring)",
-              }}
-            >
-              <Sparkles size={12} />
-              Enterprise storage · built with discipline
-            </span>
+        <div className="relative max-w-7xl mx-auto px-6 md:px-10 pt-16 pb-12 md:pt-20 md:pb-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
-            <h1
-              className="text-5xl sm:text-6xl md:text-7xl font-extrabold fc-text tracking-tight leading-[0.95]"
-              style={{ letterSpacing: "-0.035em" }}
-            >
-              Storage that follows{" "}
-              <span className="fc-gradient-text">your rules.</span>
-            </h1>
+            {/* ── LEFT: Copy + CTAs ── */}
+            <div className="flex flex-col gap-6 fc-anim-fadeUp">
+              {/* Badge */}
+              <div className="inline-flex w-fit">
+                <span
+                  className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-[0.15em]"
+                  style={{
+                    background: "var(--accent-soft)",
+                    color: "var(--accent)",
+                    border: "1px solid var(--accent-ring)",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: "50%",
+                      background: "var(--accent)",
+                      display: "inline-block",
+                      boxShadow: "0 0 6px 2px rgba(234,68,8,0.5)",
+                      animation: "fc-pulse-dot 2s ease-in-out infinite",
+                    }}
+                  />
+                  Enterprise-grade File Storage
+                </span>
+              </div>
 
-            <p className="text-base md:text-lg fc-text-tertiary max-w-2xl leading-relaxed">
-              FileCloud enforces every folder, file type, and quota at the
-              backend — so your subscription plan is the single source of truth.
-              No surprises. No overages.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center gap-3 mt-2">
-              <Link
-                href="/register"
-                data-testid="hero-primary-cta"
-                className="fc-btn-accent h-12 px-7 rounded-2xl text-sm font-bold inline-flex items-center gap-2"
+              {/* Headline */}
+              <h1
+                className="font-extrabold fc-text leading-[1.05]"
+                style={{ fontSize: "clamp(2.2rem, 4vw, 3.2rem)", letterSpacing: "-0.04em" }}
               >
-                Start free
-                <ArrowRight size={16} />
-              </Link>
-              <Link
-                href="/features"
-                data-testid="hero-features-cta"
-                className="fc-btn-ghost h-12 px-7 rounded-2xl text-sm font-bold inline-flex items-center gap-2"
-              >
-                Explore features
-              </Link>
+                The storage that{" "}
+                <span
+                  style={{
+                    background: "linear-gradient(135deg, var(--accent) 0%, #ff9a5c 50%, var(--accent) 100%)",
+                    backgroundSize: "200% auto",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                    animation: "fc-text-shimmer 3s linear infinite",
+                  }}
+                >
+                  enforces
+                </span>{" "}
+                your rules.
+              </h1>
+
+              {/* Sub-copy */}
+              <p className="fc-text-tertiary leading-relaxed" style={{ fontSize: "1.05rem", maxWidth: "38ch" }}>
+                FileCloud validates every upload, folder, and quota against your
+                subscription plan — server-side, every time. Built for teams
+                that need predictable, policy-driven storage.
+              </p>
+
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row items-start gap-3 mt-1">
+                <Link
+                  href="/register"
+                  data-testid="hero-primary-cta"
+                  className="inline-flex items-center gap-2 font-bold rounded-2xl"
+                  style={{
+                    background: "var(--accent)",
+                    color: "white",
+                    padding: "0.75rem 1.75rem",
+                    fontSize: "0.9rem",
+                    boxShadow: "0 4px 20px -4px rgba(234,68,8,0.45), 0 0 0 1px rgba(234,68,8,0.15)",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "var(--accent-hover)";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 8px 28px -4px rgba(234,68,8,0.55), 0 0 0 1px rgba(234,68,8,0.2)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "var(--accent)";
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "0 4px 20px -4px rgba(234,68,8,0.45), 0 0 0 1px rgba(234,68,8,0.15)";
+                  }}
+                >
+                  Get started free
+                  <ArrowRight size={16} />
+                </Link>
+                <Link
+                  href="/features"
+                  data-testid="hero-features-cta"
+                  className="inline-flex items-center gap-2 font-semibold rounded-2xl fc-text-secondary"
+                  style={{
+                    background: "var(--bg-surface)",
+                    border: "1px solid var(--border-default)",
+                    padding: "0.75rem 1.75rem",
+                    fontSize: "0.9rem",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "var(--border-strong)";
+                    e.currentTarget.style.background = "var(--bg-surface-2)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "var(--border-default)";
+                    e.currentTarget.style.background = "var(--bg-surface)";
+                  }}
+                >
+                  Explore features
+                </Link>
+              </div>
+
+              {/* Trust badges — no icons */}
+              <div className="flex items-center gap-5 pt-2 flex-wrap">
+                {[
+                  "Backend-enforced quotas",
+                  "Unlimited nesting",
+                  "Instant activation",
+                ].map((label) => (
+                  <div key={label} className="flex items-center gap-1.5 text-xs fc-text-muted font-medium">
+                    <span
+                      style={{
+                        width: 5,
+                        height: 5,
+                        borderRadius: "50%",
+                        background: "var(--accent)",
+                        display: "inline-block",
+                        flexShrink: 0,
+                      }}
+                    />
+                    {label}
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="flex items-center gap-6 pt-6 flex-wrap justify-center">
-              {[
-                { Icon: ShieldCheck, label: "Backend-enforced quotas" },
-                { Icon: Layers, label: "Unlimited nesting" },
-                { Icon: Zap, label: "Instant activation" },
-              ].map(({ Icon, label }) => (
-                <div key={label} className="flex items-center gap-2 text-xs fc-text-tertiary">
-                  <Icon size={14} className="fc-accent" />
-                  {label}
+            {/* ── RIGHT: Dashboard Mock ── */}
+            <div
+              className="hidden lg:block fc-anim-fadeUp"
+              style={{ animationDelay: "0.15s" }}
+            >
+              <div
+                style={{
+                  background: "var(--bg-surface)",
+                  border: "1px solid var(--border-default)",
+                  borderRadius: "20px",
+                  boxShadow: "0 24px 60px -12px rgba(10,14,28,0.14), 0 8px 24px -6px rgba(10,14,28,0.08), 0 0 0 1px var(--border-subtle)",
+                  overflow: "hidden",
+                  position: "relative",
+                }}
+              >
+                {/* Window chrome */}
+                <div
+                  style={{
+                    background: "var(--bg-surface-2)",
+                    borderBottom: "1px solid var(--border-subtle)",
+                    padding: "12px 16px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
+                  <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#ff5f57", display: "inline-block" }} />
+                  <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#febc2e", display: "inline-block" }} />
+                  <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#28c840", display: "inline-block" }} />
+                  <span
+                    style={{
+                      marginLeft: 10,
+                      fontSize: "0.7rem",
+                      color: "var(--text-muted)",
+                      background: "var(--bg-canvas)",
+                      border: "1px solid var(--border-subtle)",
+                      borderRadius: 6,
+                      padding: "2px 10px",
+                      fontFamily: "monospace",
+                    }}
+                  >
+                    filecloud.app/drive
+                  </span>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          <div className="hidden md:block absolute top-24 right-8 opacity-20 pointer-events-none fc-anim-float">
-            <LogoMark size={140} />
+                {/* App layout */}
+                <div style={{ display: "flex", height: 340 }}>
+                  {/* Sidebar */}
+                  <div
+                    style={{
+                      width: 180,
+                      borderRight: "1px solid var(--border-subtle)",
+                      background: "var(--bg-canvas)",
+                      padding: "16px 12px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 4,
+                    }}
+                  >
+                    <p style={{ fontSize: "0.6rem", fontWeight: 800, color: "var(--text-muted)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8, paddingLeft: 4 }}>My Drive</p>
+                    {[
+                      { label: "📁 Projects", active: true },
+                      { label: "📁 Design Assets", active: false },
+                      { label: "📁 Client Work", active: false },
+                      { label: "📁 Archive", active: false },
+                    ].map(({ label, active }) => (
+                      <div
+                        key={label}
+                        style={{
+                          padding: "6px 10px",
+                          borderRadius: 8,
+                          fontSize: "0.72rem",
+                          fontWeight: active ? 700 : 500,
+                          color: active ? "var(--accent)" : "var(--text-secondary)",
+                          background: active ? "var(--accent-soft)" : "transparent",
+                          cursor: "default",
+                        }}
+                      >
+                        {label}
+                      </div>
+                    ))}
+                    {/* Plan badge */}
+                    <div style={{ marginTop: "auto" }}>
+                      <div
+                        style={{
+                          background: "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
+                          borderRadius: 10,
+                          padding: "10px 12px",
+                          border: "1px solid rgba(234,68,8,0.2)",
+                        }}
+                      >
+                        <p style={{ fontSize: "0.62rem", fontWeight: 800, color: "var(--accent)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Gold Plan</p>
+                        <p style={{ fontSize: "0.68rem", color: "var(--accent-hover)", marginTop: 2 }}>50 GB storage</p>
+                        {/* Usage bar */}
+                        <div style={{ marginTop: 8, background: "rgba(234,68,8,0.15)", borderRadius: 99, height: 4 }}>
+                          <div style={{ width: "62%", height: "100%", background: "var(--accent)", borderRadius: 99 }} />
+                        </div>
+                        <p style={{ fontSize: "0.58rem", color: "var(--accent-hover)", marginTop: 3 }}>31.2 GB used</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Main content */}
+                  <div style={{ flex: 1, padding: "16px", overflowY: "hidden" }}>
+                    {/* Toolbar */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                      <p style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)" }}>Projects</p>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <div style={{ width: 24, height: 24, borderRadius: 6, background: "var(--bg-surface-2)", border: "1px solid var(--border-subtle)" }} />
+                        <div style={{ width: 52, height: 24, borderRadius: 6, background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <span style={{ fontSize: "0.58rem", color: "white", fontWeight: 700 }}>+ Upload</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* File grid */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+                      {[
+                        { name: "brand-kit.pdf", type: "PDF", size: "2.4 MB", color: "#ef4444" },
+                        { name: "hero-final.png", type: "IMG", size: "1.8 MB", color: "#3b82f6" },
+                        { name: "pitch-v3.pdf", type: "PDF", size: "4.1 MB", color: "#ef4444" },
+                        { name: "walkthrough.mp4", type: "VID", size: "18 MB", color: "#8b5cf6" },
+                        { name: "audio-mix.mp3", type: "AUD", size: "6.7 MB", color: "#10b981" },
+                        { name: "report-Q4.pdf", type: "PDF", size: "890 KB", color: "#ef4444" },
+                      ].map(({ name, type, size, color }) => (
+                        <div
+                          key={name}
+                          style={{
+                            background: "var(--bg-surface-2)",
+                            border: "1px solid var(--border-subtle)",
+                            borderRadius: 10,
+                            padding: "10px",
+                            cursor: "default",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: 7,
+                              background: `${color}18`,
+                              border: `1px solid ${color}30`,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              marginBottom: 6,
+                            }}
+                          >
+                            <span style={{ fontSize: "0.55rem", fontWeight: 800, color }}>{type}</span>
+                          </div>
+                          <p style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--text-primary)", lineHeight: 1.3, wordBreak: "break-all" }}>{name}</p>
+                          <p style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: 2 }}>{size}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Upload progress indicator */}
+                    <div
+                      style={{
+                        marginTop: 12,
+                        padding: "8px 12px",
+                        background: "var(--accent-soft)",
+                        border: "1px solid var(--accent-ring)",
+                        borderRadius: 10,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                      }}
+                    >
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                          <span style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--accent)" }}>Uploading campaign-assets.zip</span>
+                          <span style={{ fontSize: "0.6rem", color: "var(--accent)" }}>74%</span>
+                        </div>
+                        <div style={{ background: "rgba(234,68,8,0.15)", borderRadius: 99, height: 3 }}>
+                          <div
+                            style={{
+                              width: "74%",
+                              height: "100%",
+                              background: "var(--accent)",
+                              borderRadius: 99,
+                              animation: "fc-progress-anim 2.5s ease-in-out infinite alternate",
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating stat cards */}
+              <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
+                {[
+                  { label: "Storage used", value: "31.2 GB", sub: "of 50 GB · Gold plan", color: "var(--accent)" },
+                  { label: "Files uploaded", value: "1,284", sub: "across 18 folders", color: "#3b82f6" },
+                ].map(({ label, value, sub, color }) => (
+                  <div
+                    key={label}
+                    style={{
+                      flex: 1,
+                      background: "var(--bg-surface)",
+                      border: "1px solid var(--border-default)",
+                      borderRadius: 14,
+                      padding: "14px 16px",
+                      boxShadow: "var(--shadow-sm)",
+                    }}
+                  >
+                    <p style={{ fontSize: "0.62rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</p>
+                    <p style={{ fontSize: "1.25rem", fontWeight: 800, color, letterSpacing: "-0.03em", marginTop: 2 }}>{value}</p>
+                    <p style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: 1 }}>{sub}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
           </div>
         </div>
       </section>

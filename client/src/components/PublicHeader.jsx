@@ -24,11 +24,11 @@ export default function PublicHeader() {
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        scrolled ? "fc-glass" : ""
-      }`}
+      className="sticky top-0 z-50 transition-all duration-300"
       style={{
-        borderBottom: scrolled ? "1px solid var(--border-subtle)" : "1px solid transparent",
+        background: "var(--bg-surface-2)",
+        borderBottom: "1px solid var(--border-subtle)",
+        boxShadow: scrolled ? "0 2px 16px -4px rgba(10,14,28,0.08)" : "none",
       }}
     >
       <div className="max-w-7xl mx-auto px-5 md:px-8 h-16 flex items-center justify-between">
@@ -39,7 +39,7 @@ export default function PublicHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className="px-4 py-2 rounded-lg text-[13px] font-semibold fc-text-secondary hover:fc-text transition-colors"
+              className="px-4 py-2 rounded-lg text-sm font-bold fc-text-secondary hover:fc-text transition-colors"
               data-testid={`nav-${item.label.toLowerCase().replace(" ", "-")}`}
             >
               {item.label}
@@ -51,14 +51,14 @@ export default function PublicHeader() {
           <Link
             href="/login"
             data-testid="header-login-btn"
-            className="hidden sm:inline-flex fc-btn-ghost items-center h-9 px-4 rounded-xl text-[13px] font-semibold"
+            className="hidden sm:inline-flex fc-btn-ghost items-center h-9 px-4 rounded-xl text-sm font-bold"
           >
             Sign in
           </Link>
           <Link
             href="/register"
             data-testid="header-signup-btn"
-            className="fc-btn-accent inline-flex items-center h-9 px-4 rounded-xl text-[13px] font-semibold"
+            className="fc-btn-accent inline-flex items-center h-9 px-4 rounded-xl text-sm font-bold"
           >
             Get started
           </Link>
@@ -83,7 +83,7 @@ export default function PublicHeader() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className="px-3 py-2.5 rounded-lg text-sm font-medium fc-text-secondary hover:fc-surface-2"
+                className="px-3 py-2.5 rounded-lg text-sm font-bold fc-text-secondary hover:fc-surface-2"
               >
                 {item.label}
               </Link>
@@ -91,7 +91,7 @@ export default function PublicHeader() {
             <Link
               href="/login"
               onClick={() => setMobileOpen(false)}
-              className="mt-2 fc-btn-ghost h-10 px-4 rounded-xl text-sm font-semibold inline-flex items-center justify-center"
+              className="mt-2 fc-btn-ghost h-10 px-4 rounded-xl text-sm font-bold inline-flex items-center justify-center"
             >
               Sign in
             </Link>
