@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { FolderOpen, Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
+import { FolderOpen, Mail, Lock, Eye, EyeOff, LogIn, X } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function Login() {
   const router = useRouter();
@@ -105,7 +106,17 @@ export default function Login() {
 
   return (
     <>
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen bg-white flex flex-col relative">
+        {/* Close to home */}
+        <Link
+          href="/"
+          data-testid="auth-close-btn"
+          aria-label="Back to homepage"
+          className="absolute top-5 right-5 z-10 w-10 h-10 inline-flex items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 hover:text-[#ea4408] hover:border-[#ea4408] hover:shadow-md transition-all"
+        >
+          <X className="w-4 h-4" />
+        </Link>
+
         {/* Main Content */}
         <main className="flex flex-1 items-center justify-center px-4 py-8">
           <div className="w-full max-w-[400px] space-y-6">
@@ -137,7 +148,7 @@ export default function Login() {
                     <input
                       className={`block w-full rounded-lg border ${
                         errors.email ? "border-red-400" : "border-gray-200"
-                      } bg-white py-2 pl-8 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition-all outline-none`}
+                      } bg-white py-2 pl-8 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#ea4408] focus:ring-1 focus:ring-[#ea4408] transition-all outline-none`}
                       id="email"
                       name="email"
                       placeholder="name@company.com"
@@ -164,7 +175,7 @@ export default function Login() {
                       Password
                     </label>
                     <a
-                      className="text-[10px] font-bold text-indigo-600 hover:underline cursor-pointer"
+                      className="text-[10px] font-bold text-[#ea4408] hover:underline cursor-pointer"
                       href="/forgot-password"
                     >
                       Forgot Password?
@@ -177,7 +188,7 @@ export default function Login() {
                     <input
                       className={`block w-full rounded-lg border ${
                         errors.password ? "border-red-400" : "border-gray-200"
-                      } bg-white py-2 pl-8 pr-9 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition-all outline-none`}
+                      } bg-white py-2 pl-8 pr-9 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#ea4408] focus:ring-1 focus:ring-[#ea4408] transition-all outline-none`}
                       id="password"
                       name="password"
                       placeholder="••••••••"
@@ -208,7 +219,7 @@ export default function Login() {
 
                 {/* Sign In Button */}
                 <button
-                  className="group relative flex w-full items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-1 active:scale-[0.98] disabled:bg-indigo-400 disabled:cursor-not-allowed cursor-pointer"
+                  className="group relative flex w-full items-center justify-center rounded-lg bg-[#ea4408] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#c1330a] focus:ring-2 focus:ring-[#ea4408] focus:ring-offset-1 active:scale-[0.98] disabled:bg-[#ff9a5c] disabled:cursor-not-allowed cursor-pointer"
                   type="submit"
                   disabled={loading}
                 >
@@ -250,7 +261,7 @@ export default function Login() {
             <p className="text-center text-xs text-gray-500">
               Don't have an account?{" "}
               <a
-                className="font-bold text-indigo-600 hover:underline cursor-pointer"
+                className="font-bold text-[#ea4408] hover:underline cursor-pointer"
                 href="/register"
               >
                 Create an account
@@ -260,7 +271,7 @@ export default function Login() {
         </main>
 
         {/* Bottom Decoration */}
-        <div className="h-[2px] bg-gradient-to-r from-indigo-100 via-indigo-600 to-indigo-100"></div>
+        <div className="h-[2px] bg-gradient-to-r from-[#ffe3cf] via-[#ea4408] to-[#ffe3cf]"></div>
       </div>
     </>
   );

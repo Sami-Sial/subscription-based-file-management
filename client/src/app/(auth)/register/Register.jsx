@@ -9,9 +9,11 @@ import {
   Eye,
   EyeOff,
   UserPlus,
+  X,
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function Register() {
   const router = useRouter();
@@ -134,7 +136,17 @@ export default function Register() {
   return (
     <>
       <Toaster position="top-center" />
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen bg-white flex flex-col relative">
+        {/* Close to home */}
+        <Link
+          href="/"
+          data-testid="auth-close-btn"
+          aria-label="Back to homepage"
+          className="absolute top-5 right-5 z-10 w-10 h-10 inline-flex items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 hover:text-[#ea4408] hover:border-[#ea4408] hover:shadow-md transition-all"
+        >
+          <X className="w-4 h-4" />
+        </Link>
+
         {/* Main Content */}
         <main className="flex flex-1 items-center justify-center px-4 py-8">
           <div className="w-full max-w-[400px] space-y-6">
@@ -166,7 +178,7 @@ export default function Register() {
                     <input
                       className={`block w-full rounded-lg border ${
                         errors.fullName ? "border-red-400" : "border-gray-200"
-                      } bg-white py-2 pl-8 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition-all outline-none`}
+                      } bg-white py-2 pl-8 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#ea4408] focus:ring-1 focus:ring-[#ea4408] transition-all outline-none`}
                       id="fullName"
                       name="fullName"
                       placeholder="John Doe"
@@ -198,7 +210,7 @@ export default function Register() {
                     <input
                       className={`block w-full rounded-lg border ${
                         errors.email ? "border-red-400" : "border-gray-200"
-                      } bg-white py-2 pl-8 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition-all outline-none`}
+                      } bg-white py-2 pl-8 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#ea4408] focus:ring-1 focus:ring-[#ea4408] transition-all outline-none`}
                       id="email"
                       name="email"
                       placeholder="name@company.com"
@@ -230,7 +242,7 @@ export default function Register() {
                     <input
                       className={`block w-full rounded-lg border ${
                         errors.password ? "border-red-400" : "border-gray-200"
-                      } bg-white py-2 pl-8 pr-9 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition-all outline-none`}
+                      } bg-white py-2 pl-8 pr-9 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#ea4408] focus:ring-1 focus:ring-[#ea4408] transition-all outline-none`}
                       id="password"
                       name="password"
                       placeholder="••••••••"
@@ -276,7 +288,7 @@ export default function Register() {
                         errors.confirmPassword
                           ? "border-red-400"
                           : "border-gray-200"
-                      } bg-white py-2 pl-8 pr-9 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition-all outline-none`}
+                      } bg-white py-2 pl-8 pr-9 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#ea4408] focus:ring-1 focus:ring-[#ea4408] transition-all outline-none`}
                       id="confirmPassword"
                       name="confirmPassword"
                       placeholder="••••••••"
@@ -311,7 +323,7 @@ export default function Register() {
                 <div className="flex flex-col gap-1 pt-1">
                   <div className="flex items-start gap-2">
                     <input
-                      className={`mt-0.5 h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 focus:ring-offset-0 transition-colors cursor-pointer ${
+                      className={`mt-0.5 h-3.5 w-3.5 rounded border-gray-300 text-[#ea4408] focus:ring-[#ea4408] focus:ring-offset-0 transition-colors cursor-pointer ${
                         errors.agreeToTerms ? "border-red-400" : ""
                       }`}
                       id="agreeToTerms"
@@ -327,14 +339,14 @@ export default function Register() {
                     >
                       I agree to the{" "}
                       <a
-                        className="text-indigo-600 hover:underline font-semibold"
+                        className="text-[#ea4408] hover:underline font-semibold"
                         href="#"
                       >
                         Terms of Service
                       </a>{" "}
                       and{" "}
                       <a
-                        className="text-indigo-600 hover:underline font-semibold"
+                        className="text-[#ea4408] hover:underline font-semibold"
                         href="#"
                       >
                         Privacy Policy
@@ -350,7 +362,7 @@ export default function Register() {
 
                 {/* Create Account Button */}
                 <button
-                  className="group relative flex w-full items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-1 active:scale-[0.98] disabled:bg-indigo-400 disabled:cursor-not-allowed cursor-pointer"
+                  className="group relative flex w-full items-center justify-center rounded-lg bg-[#ea4408] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#c1330a] focus:ring-2 focus:ring-[#ea4408] focus:ring-offset-1 active:scale-[0.98] disabled:bg-[#ff9a5c] disabled:cursor-not-allowed cursor-pointer"
                   type="submit"
                   disabled={isLoading}
                 >
@@ -392,7 +404,7 @@ export default function Register() {
             <p className="text-center text-xs text-gray-500">
               Already have an account?{" "}
               <a
-                className="font-bold text-indigo-600 hover:underline cursor-pointer"
+                className="font-bold text-[#ea4408] hover:underline cursor-pointer"
                 href="/login"
               >
                 Sign in
@@ -402,7 +414,7 @@ export default function Register() {
         </main>
 
         {/* Bottom Decoration */}
-        <div className="h-[2px] bg-gradient-to-r from-indigo-100 via-indigo-600 to-indigo-100"></div>
+        <div className="h-[2px] bg-gradient-to-r from-[#ffe3cf] via-[#ea4408] to-[#ffe3cf]"></div>
       </div>
     </>
   );

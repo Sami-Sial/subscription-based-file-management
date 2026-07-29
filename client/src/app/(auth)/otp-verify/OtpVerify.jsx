@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Mail, ArrowRight, RefreshCw, Shield, HelpCircle } from "lucide-react";
+import { Mail, ArrowRight, RefreshCw, Shield, HelpCircle, X } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 export default function OTPVerification() {
   const router = useRouter();
@@ -128,11 +129,21 @@ export default function OTPVerification() {
 
   return (
     <>
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen bg-white flex flex-col relative">
+        {/* Close to home */}
+        <Link
+          href="/"
+          data-testid="auth-close-btn"
+          aria-label="Back to homepage"
+          className="absolute top-5 right-5 z-10 w-10 h-10 inline-flex items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 hover:text-[#ea4408] hover:border-[#ea4408] hover:shadow-md transition-all"
+        >
+          <X className="w-4 h-4" />
+        </Link>
+
         <main className="flex flex-1 items-center justify-center p-4">
           <div className="w-full max-w-[420px] space-y-6 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <div className="text-center space-y-2">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 mb-3">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#fff4ed] text-[#ea4408] mb-3">
                 <Mail className="w-6 h-6" />
               </div>
               <h1 className="text-xl font-bold text-gray-900">
@@ -162,9 +173,9 @@ export default function OTPVerification() {
                       disabled={loadingVerify}
                       className={`h-11 w-9 sm:h-12 sm:w-10 rounded-lg border-2 ${
                         digit || index === activeIndex
-                          ? "border-indigo-600"
+                          ? "border-[#ea4408]"
                           : "border-gray-200"
-                      } bg-white text-center text-lg font-bold text-indigo-600 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed`}
+                      } bg-white text-center text-lg font-bold text-[#ea4408] focus:border-[#ea4408] focus:ring-2 focus:ring-[#ffe3cf] transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed`}
                       autoFocus={index === 0}
                     />
                   ))}
@@ -175,7 +186,7 @@ export default function OTPVerification() {
                 <button
                   onClick={handleVerify}
                   disabled={loadingVerify || otp.join("").length !== OTP_LENGTH}
-                  className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 disabled:cursor-not-allowed text-white rounded-lg font-semibold text-sm shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-full h-11 bg-[#ea4408] hover:bg-[#c1330a] disabled:bg-indigo-400 disabled:cursor-not-allowed text-white rounded-lg font-semibold text-sm shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   {loadingVerify ? (
                     <>
@@ -216,7 +227,7 @@ export default function OTPVerification() {
                   <button
                     onClick={handleResend}
                     disabled={loadingResend}
-                    className="text-indigo-600 font-semibold hover:text-indigo-700 text-xs flex items-center gap-1 group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    className="text-[#ea4408] font-semibold hover:text-[#c1330a] text-xs flex items-center gap-1 group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   >
                     {loadingResend ? (
                       <>
