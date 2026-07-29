@@ -44,7 +44,7 @@ export default function Navbar({ onMenuToggle }) {
 
       {/* Welcome Text */}
       <div className="flex-1">
-        <p className="text-lg font-extrabold">Welcome back 👋</p>
+        <p className="text-sm font-black text-slate-800 tracking-tight">Admin Console</p>
       </div>
 
       {/* Right actions */}

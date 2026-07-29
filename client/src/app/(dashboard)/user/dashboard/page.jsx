@@ -581,14 +581,14 @@ export default function Dashboard() {
         <motion.div
           initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between"
+          className="flex items-center justify-between border-b border-slate-100 pb-5"
         >
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
               {user?.name ? (
                 <>
                   Welcome back,{" "}
-                  <span style={{ color: planAccent }}>
+                  <span style={{ color: planAccent }} className="underline decoration-2 decoration-indigo-600/20 underline-offset-4">
                     {user.name.split(" ")[0]}
                   </span>{" "}
                   👋
@@ -597,11 +597,11 @@ export default function Dashboard() {
                 "Dashboard"
               )}
             </h1>
-            <p className="text-sm text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-400 mt-1.5 font-bold uppercase tracking-wider">
               {new Date().toLocaleDateString("en", {
-                weekday: "long",
+                weekday: "short",
                 year: "numeric",
-                month: "long",
+                month: "short",
                 day: "numeric",
               })}
             </p>
@@ -610,11 +610,11 @@ export default function Dashboard() {
           <div className="flex items-center gap-3">
             {plan && (
               <div
-                className="flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-bold"
+                className="flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-black uppercase tracking-wider"
                 style={{
-                  borderColor: `${planAccent}40`,
+                  borderColor: `${planAccent}25`,
                   color: planAccent,
-                  background: `${planAccent}10`,
+                  background: `${planAccent}08`,
                 }}
               >
                 <Crown className="w-3.5 h-3.5" />
@@ -627,7 +627,7 @@ export default function Dashboard() {
                 fetchData();
                 fetchFolderExplorers();
               }}
-              className="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors cursor-pointer"
+              className="w-9 h-9 rounded-xl bg-white border border-slate-200/80 shadow-sm flex items-center justify-center hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer"
             >
               <RefreshCw
                 className={`w-4 h-4 text-slate-400 ${
