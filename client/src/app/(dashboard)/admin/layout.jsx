@@ -58,7 +58,7 @@ export default function Page({ children }) {
   }
 
   return (
-    <div className="flex h-screen bg-[#f5f6fa] overflow-hidden">
+    <div className="flex h-screen fc-canvas overflow-hidden">
       {/* Sidebar handles both desktop sticky + mobile drawer */}
       <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
 
@@ -68,6 +68,7 @@ export default function Page({ children }) {
         <Navbar
           onMenuToggle={() => setMobileOpen((prev) => !prev)}
           user={user}
+          role="admin"
         />
 
         {/* Scrollable page content */}

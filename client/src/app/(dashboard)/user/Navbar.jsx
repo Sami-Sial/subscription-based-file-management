@@ -2,23 +2,18 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Menu, Settings, LogOut } from "lucide-react";
+import { Menu, Settings, LogOut, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export default function Navbar({ onMenuToggle }) {
+export default function Navbar({ onMenuToggle, user }) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     try {
       setLoading(true);
-
       localStorage.removeItem("token");
-
-      // small delay for UX
-      setTimeout(() => {
-        router.push("/login");
-      }, 800);
+      setTimeout(() => router.push("/login"), 600);
     } catch (err) {
       console.error(err);
     } finally {
@@ -26,49 +21,80 @@ export default function Navbar({ onMenuToggle }) {
     }
   };
 
+  const firstName = user?.name?.split(" ")[0] || "there";
+  const initial = (user?.name?.[0] || "U").toUpperCase();
+
   return (
     <motion.header
-      initial={{ opacity: 0, y: -10 }}
+      initial={{ opacity: 0, y: -6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: 0.1 }}
-      className="bg-white border-b border-gray-100 px-4 sm:px-6 py-3 flex items-center gap-3 shrink-0 sticky top-0 z-30"
+      transition={{ duration: 0.3 }}
+      className="sticky top-0 z-30 h-16 shrink-0 flex items-center gap-3 px-4 sm:px-6 border-b"
+      style={{
+        background: "color-mix(in oklab, var(--bg-surface) 85%, transparent)",
+        borderColor: "var(--border-subtle)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+      }}
     >
-      {/* Hamburger */}
-      <motion.button
-        whileTap={{ scale: 0.9 }}
+      <button
         onClick={onMenuToggle}
-        className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors shrink-0"
+        className="lg:hidden w-9 h-9 inline-flex items-center justify-center rounded-xl fc-btn-ghost"
+        aria-label="Menu"
+        data-testid="mobile-menu-btn"
       >
-        <Menu size={18} />
-      </motion.button>
+        <Menu size={16} />
+      </button>
 
-      {/* Welcome Text */}
-      <div className="flex-1">
-        <p className="text-sm font-black text-slate-800 tracking-tight">User Panel</p>
+      <div className="flex-1 min-w-0">
+        <p className="text-[11px] font-black uppercase tracking-widest fc-text-muted leading-none">
+          Welcome back
+        </p>
+        <p className="text-sm sm:text-base font-bold fc-text truncate mt-0.5">
+          Hi, {firstName}
+        </p>
       </div>
 
-      {/* Right actions */}
-      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-        {/* Settings */}
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+      <div className="flex items-center gap-2 shrink-0">
+        <button
           onClick={() => router.push("/user/settings")}
-          className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors cursor-pointer"
+          className="w-9 h-9 inline-flex items-center justify-center rounded-xl fc-btn-ghost"
+          aria-label="Settings"
+          data-testid="navbar-settings-btn"
         >
-          <Settings size={17} />
-        </motion.button>
+          <Settings size={15} />
+        </button>
 
-        {/* Logout */}
+        {user?.name && (
+          <div
+            className="hidden sm:flex items-center gap-2.5 h-9 pl-1 pr-3 rounded-xl"
+            style={{
+              background: "var(--bg-surface-2)",
+              border: "1px solid var(--border-subtle)",
+            }}
+          >
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white"
+              style={{ background: "var(--accent)" }}
+            >
+              {initial}
+            </div>
+            <span className="text-xs font-bold fc-text truncate max-w-[100px]">
+              {firstName}
+            </span>
+          </div>
+        )}
+
         <motion.button
-          whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
           onClick={handleLogout}
           disabled={loading}
-          className="flex items-center gap-1.5 bg-red-500 hover:bg-red-600 text-white px-3 sm:px-4 py-2 rounded-lg text-[12px] font-semibold transition-colors shadow-sm cursor-pointer"
+          data-testid="navbar-logout-btn"
+          className="inline-flex items-center gap-1.5 h-9 px-3 sm:px-4 rounded-xl text-xs font-bold text-white transition-colors disabled:opacity-60"
+          style={{ background: "#dc2626" }}
         >
           {loading ? (
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <Loader2 size={13} className="animate-spin" />
           ) : (
             <>
               <LogOut size={13} />

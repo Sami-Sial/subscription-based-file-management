@@ -3,22 +3,22 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Package, Users, BarChart2, Settings, Home, X } from "lucide-react";
+import {
+  LayoutDashboard,
+  Package,
+  HardDrive,
+  Clock,
+  Settings,
+  X,
+} from "lucide-react";
+import Logo from "@/components/Logo";
 
 const navItems = [
-  { label: "Dashboard", icon: <Home size={18} />, href: "/user/dashboard" },
-  {
-    label: "Subscriptions",
-    icon: <Package size={18} />,
-    href: "/user/subscriptions",
-  },
-  { label: "My Drive", icon: <Users size={18} />, href: "/user/drive" },
-  {
-    label: "Recent",
-    icon: <BarChart2 size={18} />,
-    href: "/user/recent",
-  },
-  { label: "Settings", icon: <Settings size={18} />, href: "/user/settings" },
+  { label: "Dashboard", icon: LayoutDashboard, href: "/user/dashboard" },
+  { label: "My Drive", icon: HardDrive, href: "/user/drive" },
+  { label: "Recent", icon: Clock, href: "/user/recent" },
+  { label: "Subscriptions", icon: Package, href: "/user/subscriptions" },
+  { label: "Settings", icon: Settings, href: "/user/settings" },
 ];
 
 function SidebarContent({ onClose }) {
@@ -26,35 +26,50 @@ function SidebarContent({ onClose }) {
 
   return (
     <>
-      {/* Logo */}
-      <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 shrink-0 bg-slate-50/50">
-        <Link href="/user/dashboard" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-            <Package size={17} className="text-white" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-black text-slate-800 tracking-tight leading-none">
-              FileCloud
-            </span>
-            <span className="text-[10px] text-slate-400 font-bold tracking-wider uppercase mt-1">
-              User Console
-            </span>
-          </div>
-        </Link>
-
+      <div
+        className="flex items-center justify-between px-5 h-16 shrink-0 border-b"
+        style={{ borderColor: "var(--border-subtle)" }}
+      >
+        <Logo size={32} href="/user/dashboard" />
         {onClose && (
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg bg-slate-100 text-slate-500 hover:text-slate-700 transition lg:hidden cursor-pointer"
+            className="w-8 h-8 inline-flex items-center justify-center fc-btn-ghost rounded-lg lg:hidden"
+            aria-label="Close"
           >
             <X size={16} />
           </button>
         )}
       </div>
 
-      {/* Nav links */}
-      <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto bg-white">
+      <div className="px-5 py-4 shrink-0">
+        <div
+          className="flex items-center gap-2 px-3 py-2 rounded-xl"
+          style={{
+            background: "var(--bg-surface-2)",
+            border: "1px solid var(--border-subtle)",
+          }}
+        >
+          <div
+            className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+            style={{ background: "var(--accent-soft)" }}
+          >
+            <HardDrive size={12} className="fc-accent" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[10px] font-black uppercase tracking-widest fc-text-tertiary">
+              Your workspace
+            </p>
+            <p className="text-[11px] fc-text-secondary truncate font-medium">
+              Personal drive
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
+          const Icon = item.icon;
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + "/");
 
@@ -63,38 +78,47 @@ function SidebarContent({ onClose }) {
               key={item.label}
               href={item.href}
               onClick={onClose ?? undefined}
-              className="block"
+              data-testid={`user-nav-${item.label.toLowerCase().replace(" ", "-")}`}
             >
               <motion.div
-                whileHover={{ x: 2 }}
+                whileHover={{ x: 3 }}
                 whileTap={{ scale: 0.98 }}
-                className={`relative flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all cursor-pointer select-none
-                ${
-                  isActive
-                    ? "bg-slate-50 text-indigo-600 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] border border-slate-100"
-                    : "text-slate-600 border border-transparent hover:text-slate-900 hover:bg-slate-50/70"
+                className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-colors ${
+                  isActive ? "fc-text" : "fc-text-tertiary hover:fc-text"
                 }`}
+                style={
+                  isActive
+                    ? { background: "var(--bg-surface-2)" }
+                    : {}
+                }
               >
-                {/* Active Left Indicator */}
                 {isActive && (
                   <motion.div
-                    layoutId="active-bar"
-                    className="absolute left-0 top-3 bottom-3 w-1 rounded-r-full bg-indigo-600"
+                    layoutId="user-active-bar"
+                    className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full"
+                    style={{ background: "var(--accent)" }}
                   />
                 )}
-
-                <span
-                  className={isActive ? "text-indigo-600" : "text-slate-400 group-hover:text-slate-600 transition-colors"}
-                >
-                  {item.icon}
-                </span>
-
+                <Icon
+                  size={16}
+                  style={{ color: isActive ? "var(--accent)" : "var(--text-muted)" }}
+                />
                 {item.label}
               </motion.div>
             </Link>
           );
         })}
       </nav>
+
+      <div
+        className="px-5 py-4 border-t shrink-0"
+        style={{ borderColor: "var(--border-subtle)" }}
+      >
+        <p className="text-[10px] font-black uppercase tracking-widest fc-text-muted mb-1">
+          Version
+        </p>
+        <p className="text-xs fc-text-secondary font-mono">FileCloud v1.0</p>
+      </div>
     </>
   );
 }
@@ -102,17 +126,16 @@ function SidebarContent({ onClose }) {
 export default function Sidebar({ mobileOpen, setMobileOpen }) {
   return (
     <>
-      {/* Desktop Sidebar */}
-      <motion.aside
-        initial={{ x: -240 }}
-        animate={{ x: 0 }}
-        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="hidden lg:flex w-[250px] bg-white border-r border-gray-100 flex-col shrink-0 h-screen sticky top-0 shadow-sm"
+      <aside
+        className="hidden lg:flex w-[240px] flex-col shrink-0 h-screen sticky top-0 border-r"
+        style={{
+          background: "var(--bg-surface)",
+          borderColor: "var(--border-subtle)",
+        }}
       >
         <SidebarContent onClose={null} />
-      </motion.aside>
+      </aside>
 
-      {/* Mobile Drawer */}
       <AnimatePresence>
         {mobileOpen && (
           <>
@@ -121,15 +144,19 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileOpen(false)}
-              className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden"
+              className="fixed inset-0 z-40 lg:hidden"
+              style={{ background: "rgba(10, 14, 28, 0.5)", backdropFilter: "blur(4px)" }}
             />
-
             <motion.aside
-              initial={{ x: -260 }}
+              initial={{ x: -280 }}
               animate={{ x: 0 }}
-              exit={{ x: -260 }}
-              transition={{ duration: 0.3 }}
-              className="fixed top-0 left-0 h-full w-[300px] bg-white border-r border-gray-100 flex flex-col z-50 lg:hidden shadow-lg"
+              exit={{ x: -280 }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              className="fixed top-0 left-0 h-full w-[280px] flex flex-col z-50 lg:hidden fc-shadow-lg"
+              style={{
+                background: "var(--bg-surface)",
+                borderRight: "1px solid var(--border-subtle)",
+              }}
             >
               <SidebarContent onClose={() => setMobileOpen(false)} />
             </motion.aside>

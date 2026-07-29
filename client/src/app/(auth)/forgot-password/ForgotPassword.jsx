@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Send, ArrowLeft, LockKeyhole } from "lucide-react";
+import { Mail, Send, ArrowLeft, LockKeyhole, X } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function ForgotPassword() {
   const router = useRouter();
@@ -74,13 +75,23 @@ export default function ForgotPassword() {
 
   return (
     <>
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen bg-white flex flex-col relative">
+        {/* Close to home */}
+        <Link
+          href="/"
+          data-testid="auth-close-btn"
+          aria-label="Back to homepage"
+          className="absolute top-5 right-5 z-10 w-10 h-10 inline-flex items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 hover:text-[#ea4408] hover:border-[#ea4408] hover:shadow-md transition-all"
+        >
+          <X className="w-4 h-4" />
+        </Link>
+
         {/* Main Content */}
         <main className="flex-1 flex flex-col items-center justify-center px-4 py-8">
           <div className="w-full max-w-[420px]">
             {/* Header Icon */}
             <div className="flex justify-center mb-6">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-600 text-white">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-[#ea4408] text-white">
                 <LockKeyhole className="w-6 h-6" />
               </div>
             </div>
@@ -109,7 +120,7 @@ export default function ForgotPassword() {
                         <input
                           className={`flex w-full rounded-lg border ${
                             error ? "border-red-400" : "border-gray-200"
-                          } bg-white py-2 pl-8 pr-3 text-sm text-black focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all placeholder:text-black/50`}
+                          } bg-white py-2 pl-8 pr-3 text-sm text-black focus:border-[#ea4408] focus:ring-1 focus:ring-[#ea4408] outline-none transition-all placeholder:text-black/50`}
                           placeholder="name@company.com"
                           type="email"
                           value={email}
@@ -127,7 +138,7 @@ export default function ForgotPassword() {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full flex items-center justify-center rounded-lg h-10 bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-all shadow-sm disabled:bg-indigo-400 disabled:cursor-not-allowed cursor-pointer"
+                      className="w-full flex items-center justify-center rounded-lg h-10 bg-[#ea4408] text-white text-sm font-semibold hover:bg-[#c1330a] transition-all shadow-sm disabled:bg-[#ff9a5c] disabled:cursor-not-allowed cursor-pointer"
                     >
                       {loading ? (
                         <>
@@ -163,7 +174,7 @@ export default function ForgotPassword() {
 
                     <div className="text-center pt-2">
                       <a
-                        className="text-xs font-medium text-indigo-600 hover:underline cursor-pointer inline-flex items-center gap-1"
+                        className="text-xs font-medium text-[#ea4408] hover:underline cursor-pointer inline-flex items-center gap-1"
                         href="/login"
                       >
                         <ArrowLeft className="w-3 h-3" />
@@ -196,14 +207,14 @@ export default function ForgotPassword() {
                           setEmailSent(false);
                           setEmail("");
                         }}
-                        className="text-indigo-600 font-semibold hover:underline cursor-pointer"
+                        className="text-[#ea4408] font-semibold hover:underline cursor-pointer"
                       >
                         try again
                       </button>
                     </p>
                     <div className="pt-4">
                       <a
-                        className="text-xs font-medium text-indigo-600 hover:underline cursor-pointer inline-flex items-center gap-1"
+                        className="text-xs font-medium text-[#ea4408] hover:underline cursor-pointer inline-flex items-center gap-1"
                         href="/login"
                       >
                         <ArrowLeft className="w-3 h-3" />
