@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import Logo from "./Logo";
-import ThemeToggle from "./ThemeToggle";
 
 const navItems = [
-  { label: "Features", href: "/#features" },
+  { label: "Features", href: "/features" },
   { label: "Pricing", href: "/#pricing" },
-  { label: "About", href: "/about" },
+  { label: "About us", href: "/about" },
+  { label: "Contact us", href: "/contact" },
 ];
 
 export default function PublicHeader() {
@@ -39,8 +39,8 @@ export default function PublicHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className="px-4 py-2 rounded-lg text-[13px] font-medium fc-text-secondary hover:fc-text transition-colors"
-              data-testid={`nav-${item.label.toLowerCase()}`}
+              className="px-4 py-2 rounded-lg text-[13px] font-semibold fc-text-secondary hover:fc-text transition-colors"
+              data-testid={`nav-${item.label.toLowerCase().replace(" ", "-")}`}
             >
               {item.label}
             </Link>
@@ -48,7 +48,6 @@ export default function PublicHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <ThemeToggle size="sm" />
           <Link
             href="/login"
             data-testid="header-login-btn"

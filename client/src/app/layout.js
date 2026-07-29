@@ -1,7 +1,6 @@
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
-import { ThemeProvider } from "@/components/ThemeProvider";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -21,55 +20,31 @@ export const metadata = {
   title: "FileCloud — Enterprise File & Folder Management",
   description:
     "Subscription-based file management platform with granular admin controls, dynamic storage quotas, and enterprise-grade security.",
-  icons: {
-    icon: "/favicon.ico",
-  },
+  icons: { icon: "/favicon.ico" },
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        {/* Prevent theme flash on first paint */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function(){
-                try {
-                  var t = localStorage.getItem('fc-theme');
-                  if (!t) {
-                    t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                  }
-                  document.documentElement.setAttribute('data-theme', t);
-                } catch(e){}
-              })();
-            `,
+    <html lang="en">
+      <body className={`${jakarta.variable} ${mono.variable} font-sans antialiased`}>
+        {children}
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: "var(--bg-elevated)",
+              color: "var(--text-primary)",
+              border: "1px solid var(--border-default)",
+              borderRadius: "12px",
+              boxShadow: "var(--shadow-lg)",
+              fontSize: "13px",
+              fontWeight: 500,
+            },
+            success: { iconTheme: { primary: "#10b981", secondary: "#fff" } },
+            error: { iconTheme: { primary: "#ef4444", secondary: "#fff" } },
           }}
         />
-      </head>
-      <body
-        className={`${jakarta.variable} ${mono.variable} font-sans antialiased`}
-      >
-        <ThemeProvider>
-          {children}
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: "var(--bg-elevated)",
-                color: "var(--text-primary)",
-                border: "1px solid var(--border-default)",
-                borderRadius: "12px",
-                boxShadow: "var(--shadow-lg)",
-                fontSize: "13px",
-                fontWeight: 500,
-              },
-              success: { iconTheme: { primary: "#10b981", secondary: "#fff" } },
-              error: { iconTheme: { primary: "#ef4444", secondary: "#fff" } },
-            }}
-          />
-        </ThemeProvider>
       </body>
     </html>
   );

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Menu, Settings, LogOut, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Navbar({ onMenuToggle, user, role = "user" }) {
   const [loading, setLoading] = useState(false);
@@ -57,8 +56,6 @@ export default function Navbar({ onMenuToggle, user, role = "user" }) {
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
-        <ThemeToggle size="md" />
-
         <button
           onClick={() => router.push(`/${role}/settings`)}
           className="w-9 h-9 inline-flex items-center justify-center rounded-xl fc-btn-ghost"

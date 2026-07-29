@@ -49,7 +49,7 @@ export default function PublicFooter() {
             </p>
             <ul className="flex flex-col gap-2.5">
               {[
-                { href: "/#features", label: "Features" },
+                { href: "/features", label: "Features" },
                 { href: "/#pricing", label: "Pricing" },
                 { href: "/register", label: "Get started" },
                 { href: "/login", label: "Sign in" },
@@ -73,6 +73,7 @@ export default function PublicFooter() {
             <ul className="flex flex-col gap-2.5">
               {[
                 { href: "/about", label: "About us" },
+                { href: "/contact", label: "Contact us" },
                 { href: "/terms", label: "Terms of service" },
                 { href: "/privacy", label: "Privacy policy" },
               ].map((item) => (
