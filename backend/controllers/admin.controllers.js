@@ -121,6 +121,7 @@ export const deleteSubscription = async (req, res, next) => {
 export const getAllUsers = async (req, res, next) => {
   try {
     const users = await prisma.user.findMany({
+      where: { role: "user" },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -183,7 +184,7 @@ export const getAdminStats = async (req, res, next) => {
       filesByFormat,
     ] = await Promise.all([
       // Total users
-      prisma.user.count(),
+      prisma.user.count({ where: { role: "user" } }),
 
       // Total subscription plans
       prisma.subscription.count(),
@@ -196,7 +197,7 @@ export const getAdminStats = async (req, res, next) => {
 
       // Active user subscriptions (for revenue + plan breakdown)
       prisma.userSubscription.findMany({
-        where: { status: "active" },
+        where: { status: "active", user: { role: "user" } },
         select: {
           id: true,
           startDate: true,
@@ -210,11 +211,13 @@ export const getAdminStats = async (req, res, next) => {
 
       // All user subscriptions ever (for revenue calculation)
       prisma.userSubscription.findMany({
+        where: { user: { role: "user" } },
         include: { subscription: true },
       }),
 
       // Latest 8 users registered
       prisma.user.findMany({
+        where: { role: "user" },
         orderBy: { createdAt: "desc" },
         take: 8,
         select: {
@@ -238,6 +241,7 @@ export const getAdminStats = async (req, res, next) => {
 
       // Latest 8 subscription activations
       prisma.userSubscription.findMany({
+        where: { user: { role: "user" } },
         orderBy: { startDate: "desc" },
         take: 8,
         select: {

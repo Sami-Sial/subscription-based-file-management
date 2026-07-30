@@ -23,8 +23,61 @@ import {
   ArrowUpRight,
   RefreshCw,
   BadgeCheck,
+  AlertTriangle,
+  X,
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
+
+// ─── Cancel Confirmation Modal ────────────────────────────────────────────────
+
+function CancelConfirmModal({ onConfirm, onClose, loading, endDate }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+        className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 relative"
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+
+        <div className="flex flex-col items-center text-center">
+          <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center mb-5">
+            <AlertTriangle className="w-8 h-8 text-red-500" />
+          </div>
+          <h3 className="text-xl font-black text-slate-900 mb-2">Cancel Subscription?</h3>
+          <p className="text-slate-500 text-sm leading-relaxed mb-2">
+            Your plan will remain <span className="font-semibold text-slate-700">active until {endDate}</span>. After that, you'll lose access to all premium features.
+          </p>
+          <p className="text-xs text-slate-400 mb-7">You won't be charged again. This action cannot be undone.</p>
+
+          <div className="flex gap-3 w-full">
+            <button
+              onClick={onClose}
+              disabled={loading}
+              className="flex-1 py-3 rounded-2xl font-bold text-sm bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+            >
+              Keep Plan
+            </button>
+            <button
+              onClick={onConfirm}
+              disabled={loading}
+              className="flex-1 py-3 rounded-2xl font-bold text-sm bg-red-500 text-white hover:bg-red-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+              {loading ? "Cancelling..." : "Yes, Cancel"}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -109,7 +162,7 @@ function SectionLabel({
 
 // ─── Active Plan Hero ─────────────────────────────────────────────────────────
 
-function ActivePlanHero({ sub, plan }) {
+function ActivePlanHero({ sub, plan, onCancel, cancelLoading, onKeep, keepLoading }) {
   const style = getPlanStyle(plan?.name);
 
   const details = [
@@ -153,6 +206,22 @@ function ActivePlanHero({ sub, plan }) {
       })
     : "—";
 
+  const endDate = sub?.endDate
+    ? new Date(sub.endDate).toLocaleDateString("en", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
+    : sub?.startDate
+    ? new Date(new Date(sub.startDate).getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("en", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "—";
+
+  const isPaid = Number(plan?.priceMonthly) > 0;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -16 }}
@@ -185,27 +254,66 @@ function ActivePlanHero({ sub, plan }) {
                 <h2 className="text-2xl font-black text-slate-900">
                   {plan?.name} Plan
                 </h2>
-                <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-600 px-2.5 py-1 rounded-full">
-                  <BadgeCheck className="w-3 h-3" /> Active
-                </span>
+                {sub?.cancelAtPeriodEnd ? (
+                  <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest bg-red-100 text-red-600 px-2.5 py-1 rounded-full">
+                    <AlertTriangle className="w-3 h-3" /> Cancels {endDate}
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-600 px-2.5 py-1 rounded-full">
+                    <BadgeCheck className="w-3 h-3" /> Active
+                  </span>
+                )}
               </div>
-              <p className="text-slate-500 text-sm">
-                Active since{" "}
-                <span className="font-semibold text-slate-700">
-                  {startDate}
-                </span>
-              </p>
+              <div className="text-slate-500 text-sm flex flex-col gap-0.5 mt-1">
+                <p>
+                  Active since{" "}
+                  <span className="font-semibold text-slate-700">
+                    {startDate}
+                  </span>
+                </p>
+                <p>
+                  {sub?.cancelAtPeriodEnd
+                    ? "Access ends on "
+                    : isPaid
+                    ? "Renews on "
+                    : "Expires on "}
+                  <span className="font-semibold text-slate-700">
+                    {endDate}
+                  </span>
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="text-right">
-            <p className="text-3xl font-black text-slate-900">
-              ${plan?.priceMonthly ?? 0}
-              <span className="text-base font-semibold text-slate-400">
-                /mo
-              </span>
-            </p>
-            <p className="text-[11px] text-slate-400 mt-0.5">billed monthly</p>
+          <div className="flex flex-col items-end">
+            <div className="text-right">
+              <p className="text-3xl font-black text-slate-900">
+                ${plan?.priceMonthly ?? 0}
+                <span className="text-base font-semibold text-slate-400">
+                  /mo
+                </span>
+              </p>
+              <p className="text-[11px] text-slate-400 mt-0.5">billed monthly</p>
+            </div>
+            
+            {isPaid && !sub?.cancelAtPeriodEnd && (
+              <button
+                onClick={onCancel}
+                disabled={cancelLoading}
+                className="mt-3 text-[11px] font-bold text-red-500 hover:text-red-700 underline underline-offset-2 disabled:opacity-50"
+              >
+                {cancelLoading ? "Processing..." : "Cancel Subscription"}
+              </button>
+            )}
+            {isPaid && sub?.cancelAtPeriodEnd && (
+              <button
+                onClick={onKeep}
+                disabled={keepLoading}
+                className="mt-3 text-[11px] font-bold text-emerald-600 hover:text-emerald-700 underline underline-offset-2 disabled:opacity-50"
+              >
+                {keepLoading ? "Processing..." : "↩ Keep My Subscription"}
+              </button>
+            )}
           </div>
         </div>
 
@@ -260,7 +368,7 @@ function ActivePlanHero({ sub, plan }) {
 
 // ─── Plan Card ────────────────────────────────────────────────────────────────
 
-function PlanCard({ plan, isCurrent, isPopular, onSubscribe, loading }) {
+function PlanCard({ plan, isCurrent, isPopular, onSubscribe, loading, freePlanConsumed }) {
   const style = getPlanStyle(plan.name);
 
   const features = [
@@ -358,7 +466,7 @@ function PlanCard({ plan, isCurrent, isPopular, onSubscribe, loading }) {
         {/* CTA */}
         <button
           onClick={() => onSubscribe(plan)}
-          disabled={isCurrent || loading}
+          disabled={isCurrent || loading || (Number(plan.priceMonthly) === 0 && freePlanConsumed)}
           className={`w-full py-3 rounded-2xl font-bold text-sm transition-all cursor-pointer flex items-center justify-center gap-2 ${
             isCurrent
               ? "bg-emerald-50 text-emerald-600 cursor-default"
@@ -377,6 +485,10 @@ function PlanCard({ plan, isCurrent, isPopular, onSubscribe, loading }) {
             <>
               <ArrowUpRight className="w-4 h-4" /> Upgrade — $
               {plan.priceMonthly}/mo
+            </>
+          ) : freePlanConsumed ? (
+            <>
+              <Zap className="w-4 h-4" /> Free Plan Consumed
             </>
           ) : (
             <>
@@ -429,6 +541,74 @@ export default function PricingPage() {
 
   const activeSub = userSubs.find((s) => s.status === "active");
   const activePlan = activeSub?.subscription;
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [keepLoading, setKeepLoading] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+
+  // Compute the end/renewal date string for the modal
+  const activeSubEndDate = activeSub?.endDate
+    ? new Date(activeSub.endDate).toLocaleDateString("en", { month: "long", day: "numeric", year: "numeric" })
+    : activeSub?.startDate
+    ? new Date(new Date(activeSub.startDate).getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("en", { month: "long", day: "numeric", year: "numeric" })
+    : "the end of your billing period";
+
+  // Calculate free plan usage
+  const freeSubs = userSubs.filter((sub) => Number(sub.subscription?.priceMonthly) === 0);
+  let totalFreeUsedDays = 0;
+  const now = new Date();
+  freeSubs.forEach((sub) => {
+    const start = new Date(sub.startDate);
+    const end = sub.endDate ? new Date(sub.endDate) : new Date(sub.updatedAt || now);
+    totalFreeUsedDays += Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+  });
+  const freePlanConsumed = totalFreeUsedDays >= 30;
+
+  const handleCancelSubscription = async () => {
+    setCancelLoading(true);
+    try {
+      const res = await fetch(`${BASE}/api/stripe/cancel-subscription`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
+        }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to cancel");
+      
+      toast.success("Subscription scheduled to cancel at period end.");
+      setShowCancelModal(false);
+      setRefreshing(true);
+      fetchData();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+
+  const handleKeepSubscription = async () => {
+    setKeepLoading(true);
+    try {
+      const res = await fetch(`${BASE}/api/stripe/keep-subscription`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
+        }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to resume subscription");
+      
+      toast.success("Subscription renewal resumed successfully.");
+      setRefreshing(true);
+      fetchData();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setKeepLoading(false);
+    }
+  };
 
   const handleSubscribe = async (plan) => {
     setActionLoading(plan.id);
@@ -474,6 +654,14 @@ export default function PricingPage() {
 
   return (
     <>
+      {showCancelModal && (
+        <CancelConfirmModal
+          onConfirm={handleCancelSubscription}
+          onClose={() => setShowCancelModal(false)}
+          loading={cancelLoading}
+          endDate={activeSubEndDate}
+        />
+      )}
       <div className="min-h-screen">
         <div className="max-w-7xl mx-auto space-y-10">
           {/* ── Page Header ── */}
@@ -516,7 +704,14 @@ export default function PricingPage() {
                 color="text-amber-500"
                 bg="bg-amber-50"
               />
-              <ActivePlanHero sub={activeSub} plan={activePlan} />
+              <ActivePlanHero 
+                sub={activeSub} 
+                plan={activePlan} 
+                onCancel={() => setShowCancelModal(true)}
+                cancelLoading={cancelLoading}
+                onKeep={handleKeepSubscription}
+                keepLoading={keepLoading}
+              />
             </section>
           ) : (
             <div className="rounded-2xl bg-amber-50 border border-amber-100 px-5 py-4 flex items-center gap-3">
@@ -552,13 +747,14 @@ export default function PricingPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.07 }}
                   >
-                    <PlanCard
-                      plan={plan}
-                      isCurrent={isCurrent}
-                      isPopular={isPopular}
-                      onSubscribe={handleSubscribe}
-                      loading={actionLoading === plan.id}
-                    />
+                      <PlanCard
+                        plan={plan}
+                        isCurrent={isCurrent}
+                        isPopular={isPopular}
+                        onSubscribe={handleSubscribe}
+                        loading={actionLoading === plan.id}
+                        freePlanConsumed={freePlanConsumed}
+                      />
                   </motion.div>
                 );
               })}
@@ -663,6 +859,8 @@ export default function PricingPage() {
                               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
                                 sub.status === "active"
                                   ? "bg-emerald-100 text-emerald-700"
+                                  : sub.status === "cancelled"
+                                  ? "bg-red-100 text-red-600"
                                   : sub.status === "expired"
                                   ? "bg-slate-100 text-slate-500"
                                   : "bg-amber-100 text-amber-600"

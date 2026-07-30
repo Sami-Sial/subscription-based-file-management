@@ -210,8 +210,9 @@ export default function Page({ children }) {
       {showPlanModal && (
         <PlanModal
           isOpen={showPlanModal}
-          onClose={handleModalClose}
+          onClose={() => setShowPlanModal(false)}
           currentSubscription={activeSubscription}
+          userSubs={subscriptions}
           onSubscriptionUpdate={(newSubscription) => {
             // Add new subscription to history array and mark it active
             setSubscriptions((prev) => [

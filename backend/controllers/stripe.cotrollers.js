@@ -259,6 +259,7 @@ export const stripeWebhook = async (req, res) => {
           where: { id: existingSub.id },
           data: {
             status: subscription.status === "active" ? "active" : "expired",
+            cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
           },
         });
       }
@@ -467,12 +468,16 @@ export const verifySession = async (req, res) => {
       }
 
       // Create new upgraded subscription
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + 30);
+      
       await prisma.userSubscription.create({
         data: {
           userId,
           subscriptionId,
           stripeCustomerId: session.customer,
           startDate: new Date(),
+          endDate,
           status: "active",
         },
       });
@@ -515,6 +520,9 @@ export const verifySession = async (req, res) => {
         });
       }
 
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + 30);
+
       await prisma.userSubscription.create({
         data: {
           userId,
@@ -522,6 +530,7 @@ export const verifySession = async (req, res) => {
           stripeSubscriptionId,
           stripeCustomerId,
           startDate: new Date(),
+          endDate,
           status: "active",
         },
       });
@@ -550,5 +559,96 @@ export const verifySession = async (req, res) => {
   } catch (err) {
     console.error("[verifySession] Error:", err);
     return error(res, 500, "Failed to verify payment session");
+  }
+};
+// ─── CANCEL SUBSCRIPTION ─────────────
+export const cancelSubscription = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    const activeSub = await prisma.userSubscription.findFirst({
+      where: { userId, status: "active" },
+      include: { subscription: true }
+    });
+
+    if (!activeSub) return error(res, 400, "No active subscription found");
+    if (activeSub.subscription.priceMonthly === 0) return error(res, 400, "Cannot cancel a free plan this way");
+    if (activeSub.cancelAtPeriodEnd) return error(res, 400, "Subscription is already scheduled to cancel");
+
+    // Tell Stripe to cancel at period end (not immediately — user keeps access)
+    if (activeSub.stripeSubscriptionId) {
+      await stripe.subscriptions.update(activeSub.stripeSubscriptionId, {
+        cancel_at_period_end: true,
+      });
+    }
+
+    // Calculate end date (keep existing or fallback to 30 days from start)
+    const periodEnd = activeSub.endDate
+      ? new Date(activeSub.endDate)
+      : new Date(new Date(activeSub.startDate).getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    // Mark as pending cancellation — status stays "active" so user keeps access until period ends
+    await prisma.userSubscription.update({
+      where: { id: activeSub.id },
+      data: {
+        cancelAtPeriodEnd: true,
+        endDate: periodEnd,
+      }
+    });
+
+    // Send cancellation scheduled email
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (user) {
+      await sendTemplateMail({
+        to: user.email,
+        subject: "Your Subscription is Scheduled to Cancel",
+        templateName: "subscription-failed",
+        templateData: { 
+          name: user.name || "User", 
+          planName: activeSub.subscription.name,
+          billingUrl: process.env.FRONTEND_URL + "/user/subscriptions"
+        },
+      });
+    }
+
+    return success(res, 200, "Subscription will be cancelled at the end of the billing period", {
+      cancelAtPeriodEnd: true,
+      endDate: periodEnd,
+    });
+  } catch (err) {
+    console.error("[cancelSubscription] Error:", err);
+    return error(res, 500, "Failed to cancel subscription");
+  }
+};
+
+// ─── KEEP SUBSCRIPTION (undo scheduled cancellation) ─────────────
+export const keepSubscription = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const activeSub = await prisma.userSubscription.findFirst({
+      where: { userId, status: "active", cancelAtPeriodEnd: true },
+      include: { subscription: true }
+    });
+
+    if (!activeSub) return error(res, 400, "No scheduled cancellation found");
+
+    // Tell Stripe to resume (disable cancel_at_period_end)
+    if (activeSub.stripeSubscriptionId) {
+      await stripe.subscriptions.update(activeSub.stripeSubscriptionId, {
+        cancel_at_period_end: false,
+      });
+    }
+
+    // Clear the flag in DB
+    await prisma.userSubscription.update({
+      where: { id: activeSub.id },
+      data: { cancelAtPeriodEnd: false }
+    });
+
+    return success(res, 200, "Subscription renewal resumed successfully");
+  } catch (err) {
+    console.error("[keepSubscription] Error:", err);
+    return error(res, 500, "Failed to resume subscription");
   }
 };

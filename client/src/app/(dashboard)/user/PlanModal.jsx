@@ -9,6 +9,7 @@ export default function PlanModal({
   isOpen,
   onClose,
   currentSubscription,
+  userSubs = [],
   onSubscriptionUpdate,
 }) {
   const [subscriptions, setSubscriptions] = useState([]);
@@ -204,6 +205,16 @@ export default function PlanModal({
                       ? sub.allowedTypes
                       : [];
 
+                    const freeSubRecords = userSubs.filter((s) => Number(s.subscription?.priceMonthly) === 0);
+                    let totalFreeUsedDays = 0;
+                    const now = new Date();
+                    freeSubRecords.forEach((s) => {
+                      const start = new Date(s.startDate);
+                      const end = s.endDate ? new Date(s.endDate) : new Date(s.updatedAt || now);
+                      totalFreeUsedDays += Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+                    });
+                    const freePlanConsumed = totalFreeUsedDays >= 30;
+
                     return (
                       <motion.div
                         key={sub.id}
@@ -353,7 +364,7 @@ export default function PlanModal({
                           ) : Number(sub.priceMonthly) === 0 ? (
                             <button
                               onClick={() => handleFreePlan(sub)}
-                              disabled={selectLoading === sub.id}
+                              disabled={selectLoading === sub.id || freePlanConsumed}
                               className={`w-full py-2.5 px-4 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                                 isPopular
                                   ? "bg-gradient-to-r from-blue-600 to-violet-600 text-white hover:from-blue-700 hover:to-violet-700 shadow-md shadow-blue-500/25"
@@ -367,6 +378,11 @@ export default function PlanModal({
                                     strokeWidth={3}
                                   />
                                   Processing...
+                                </>
+                              ) : freePlanConsumed ? (
+                                <>
+                                  <Zap size={14} strokeWidth={2.5} />
+                                  Consumed
                                 </>
                               ) : (
                                 <>

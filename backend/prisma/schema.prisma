@@ -79,6 +79,7 @@ model UserSubscription {
   startDate DateTime
   endDate   DateTime?
   status    SubscriptionStatus @default(active)
+  cancelAtPeriodEnd Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
