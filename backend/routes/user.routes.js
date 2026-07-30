@@ -32,4 +32,7 @@ router.get(
   controller.getActivePlanFilesAndFolders
 );
 
+// ─── STORAGE STATS
+router.get("/storage-stats", isLoggedIn, controller.getStorageStats);
+
 export default router;

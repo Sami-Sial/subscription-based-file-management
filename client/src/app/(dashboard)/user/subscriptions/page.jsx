@@ -167,6 +167,12 @@ function ActivePlanHero({ sub, plan, onCancel, cancelLoading, onKeep, keepLoadin
 
   const details = [
     {
+      icon: HardDrive,
+      label: "Total Storage",
+      value: plan?.maxStorageGB || "∞",
+      unit: "GB",
+    },
+    {
       icon: Folder,
       label: "Max Folders",
       value: plan?.maxFolders,
@@ -372,6 +378,7 @@ function PlanCard({ plan, isCurrent, isPopular, onSubscribe, loading, freePlanCo
   const style = getPlanStyle(plan.name);
 
   const features = [
+    { label: plan.maxStorageGB ? `${plan.maxStorageGB} GB Total Storage` : "Unlimited Storage", icon: HardDrive },
     { label: `${plan.maxFolders} Folders`, icon: Folder },
     { label: `${plan.maxFileSizeMB} MB max file`, icon: HardDrive },
     { label: `${plan.totalFileLimit} total files`, icon: Files },

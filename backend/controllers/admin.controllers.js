@@ -14,6 +14,7 @@ export const createSubscription = async (req, res, next) => {
       filesPerFolder,
       isActive,
       priceMonthly,
+      maxStorageGB,
     } = req.body;
 
     const subscription = await prisma.subscription.create({
@@ -26,7 +27,8 @@ export const createSubscription = async (req, res, next) => {
         totalFileLimit,
         filesPerFolder,
         isActive,
-        priceMonthly,
+        priceMonthly: priceMonthly === "" ? null : priceMonthly,
+        maxStorageGB: parseFloat(maxStorageGB) || 0,
       },
     });
 
@@ -74,6 +76,7 @@ export const getSubscriptionById = async (req, res, next) => {
 export const updateSubscription = async (req, res, next) => {
   try {
     const id = req.params.id;
+    console.log("UPDATE PAYLOAD:", req.body);
     // Check existence first (important for clean 404)
     const existing = await prisma.subscription.findUnique({
       where: { id },
@@ -83,9 +86,33 @@ export const updateSubscription = async (req, res, next) => {
       return error(res, 404, "Subscription not found");
     }
 
+    const {
+      name,
+      maxFolders,
+      maxNesting,
+      allowedTypes,
+      maxFileSizeMB,
+      totalFileLimit,
+      filesPerFolder,
+      isActive,
+      priceMonthly,
+      maxStorageGB,
+    } = req.body;
+
     const subscription = await prisma.subscription.update({
       where: { id },
-      data: req.body,
+      data: {
+        ...(name !== undefined && { name }),
+        ...(maxFolders !== undefined && { maxFolders }),
+        ...(maxNesting !== undefined && { maxNesting }),
+        ...(allowedTypes !== undefined && { allowedTypes }),
+        ...(maxFileSizeMB !== undefined && { maxFileSizeMB }),
+        ...(totalFileLimit !== undefined && { totalFileLimit }),
+        ...(filesPerFolder !== undefined && { filesPerFolder }),
+        ...(isActive !== undefined && { isActive }),
+        ...(priceMonthly !== undefined && { priceMonthly }),
+        ...(maxStorageGB !== undefined && { maxStorageGB: maxStorageGB === null ? 0 : parseFloat(maxStorageGB) }),
+      },
     });
 
     return success(res, 200, "Subscription updated successfully", subscription);

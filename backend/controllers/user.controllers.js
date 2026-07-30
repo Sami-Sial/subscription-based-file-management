@@ -279,6 +279,7 @@ export const uploadFile = async (req, res) => {
       totalFileLimit,
       filesPerFolder,
       maxFileSizeMB,
+      maxStorageGB,
       priceMonthly,
     } = activeSub.subscription;
 
@@ -292,6 +293,7 @@ export const uploadFile = async (req, res) => {
 
     let totalFiles = 0;
     let folderFiles = 0;
+    let currentTotalMB = 0;
 
     if (priceMonthly === 0) {
       const freeSubs = await prisma.userSubscription.findMany({
@@ -308,6 +310,12 @@ export const uploadFile = async (req, res) => {
         where: { userSubscriptionId: { in: freeSubIds } },
       });
 
+      const filesSum = await prisma.file.aggregate({
+        where: { userSubscriptionId: { in: freeSubIds } },
+        _sum: { sizeMB: true }
+      });
+      currentTotalMB = filesSum._sum.sizeMB || 0;
+
       folderFiles = await prisma.file.count({
         where: { folderId, userSubscriptionId: { in: freeSubIds } },
       });
@@ -316,9 +324,22 @@ export const uploadFile = async (req, res) => {
         where: { userSubscriptionId: activeSub.id },
       });
 
+      const filesSum = await prisma.file.aggregate({
+        where: { userSubscriptionId: activeSub.id },
+        _sum: { sizeMB: true }
+      });
+      currentTotalMB = filesSum._sum.sizeMB || 0;
+
       folderFiles = await prisma.file.count({
         where: { folderId, userSubscriptionId: activeSub.id },
       });
+    }
+
+    // ✅ Validate Total Storage
+    if (maxStorageGB > 0) {
+      if (currentTotalMB + parseFloat(sizeMB) > maxStorageGB * 1024) {
+        return error(res, 400, `Storage limit of ${maxStorageGB}GB exceeded`);
+      }
     }
 
     if (totalFiles >= totalFileLimit)
@@ -474,6 +495,7 @@ export const checkFileLimits = async (req, res) => {
       totalFileLimit,
       filesPerFolder,
       maxFileSizeMB,
+      maxStorageGB,
       priceMonthly,
     } = activeSub.subscription;
 
@@ -487,6 +509,7 @@ export const checkFileLimits = async (req, res) => {
 
     let totalFiles = 0;
     let folderFiles = 0;
+    let currentTotalMB = 0;
 
     // ✅ FREE plan → check across ALL free subscriptions
     if (priceMonthly === 0) {
@@ -506,6 +529,12 @@ export const checkFileLimits = async (req, res) => {
         },
       });
 
+      const filesSum = await prisma.file.aggregate({
+        where: { userSubscriptionId: { in: freeSubIds } },
+        _sum: { sizeMB: true }
+      });
+      currentTotalMB = filesSum._sum.sizeMB || 0;
+
       folderFiles = await prisma.file.count({
         where: {
           folderId,
@@ -518,12 +547,25 @@ export const checkFileLimits = async (req, res) => {
         where: { userSubscriptionId: activeSub.id },
       });
 
+      const filesSum = await prisma.file.aggregate({
+        where: { userSubscriptionId: activeSub.id },
+        _sum: { sizeMB: true }
+      });
+      currentTotalMB = filesSum._sum.sizeMB || 0;
+
       folderFiles = await prisma.file.count({
         where: {
           folderId,
           userSubscriptionId: activeSub.id,
         },
       });
+    }
+
+    // ✅ Validate Total Storage
+    if (maxStorageGB > 0) {
+      if (currentTotalMB + parseFloat(sizeMB) > maxStorageGB * 1024) {
+        return error(res, 400, `Storage limit of ${maxStorageGB}GB exceeded`);
+      }
     }
 
     // ✅ Total file limit check
@@ -563,3 +605,48 @@ export const getActiveSubscriptions = async (req, res) => {
     return error(res, 500, "Internal server error");
   }
 };
+
+/* ─── STORAGE STATS ─────────────────────────────────────────────────────── */
+export const getStorageStats = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Get active subscription with plan details
+    const activeSub = await prisma.userSubscription.findFirst({
+      where: { userId, status: "active" },
+      orderBy: { startDate: "desc" },
+      include: { subscription: true },
+    });
+
+    if (!activeSub) {
+      return success(res, 200, "Storage stats fetched", {
+        usedMB: 0,
+        maxStorageGB: 0,
+        usedPct: 0,
+      });
+    }
+
+    // Sum all file sizes for this user subscription
+    const agg = await prisma.file.aggregate({
+      where: { userSubscriptionId: activeSub.id },
+      _sum: { sizeMB: true },
+    });
+
+    const usedMB = parseFloat((agg._sum.sizeMB || 0).toFixed(2));
+    const maxStorageGB = activeSub.subscription?.maxStorageGB ?? 0;
+    const usedPct =
+      maxStorageGB > 0
+        ? Math.min(100, parseFloat(((usedMB / (maxStorageGB * 1024)) * 100).toFixed(1)))
+        : 0;
+
+    return success(res, 200, "Storage stats fetched", {
+      usedMB,
+      maxStorageGB,
+      usedPct,
+    });
+  } catch (err) {
+    console.error(err);
+    return error(res, 500, "Internal server error");
+  }
+};
+

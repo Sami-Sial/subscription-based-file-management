@@ -17,7 +17,8 @@ export const createSubscriptionSchema = z.object({
   maxFileSizeMB: z.number().int().positive(),
   totalFileLimit: z.number().int().positive(),
   filesPerFolder: z.number().int().positive(),
-  priceMonthly: z.number().int().nonnegative(),
+  priceMonthly: z.number().nonnegative().nullable().optional(),
+  maxStorageGB: z.number().min(0).optional(),
   isActive: z.enum([true, false]).optional(),
 });
 

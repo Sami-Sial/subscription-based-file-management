@@ -21,7 +21,99 @@ const navItems = [
   { label: "Settings", icon: Settings, href: "/user/settings" },
 ];
 
-function SidebarContent({ onClose }) {
+function fmtMB(mb) {
+  if (mb === 0) return "0 MB";
+  if (mb < 1024) return `${mb.toFixed(1)} MB`;
+  return `${(mb / 1024).toFixed(2)} GB`;
+}
+
+function StorageWidget({ storageStats }) {
+  const { usedMB = 0, maxStorageGB = 0, usedPct = 0 } = storageStats || {};
+  const isUnlimited = maxStorageGB === 0;
+
+  const barColor =
+    usedPct >= 90
+      ? "#f43f5e"
+      : usedPct >= 70
+      ? "#f59e0b"
+      : "var(--accent)";
+
+  return (
+    <div
+      className="px-4 py-4 border-t shrink-0"
+      style={{ borderColor: "var(--border-subtle)" }}
+    >
+      <div
+        className="rounded-xl p-3 space-y-2.5"
+        style={{
+          background: "var(--bg-surface-2)",
+          border: "1px solid var(--border-subtle)",
+        }}
+      >
+        {/* Header row */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <HardDrive size={11} style={{ color: "var(--accent)" }} />
+            <span className="text-[10px] font-black uppercase tracking-widest fc-text-muted">
+              Storage
+            </span>
+          </div>
+          {!isUnlimited && (
+            <span
+              className="text-[10px] font-bold tabular-nums"
+              style={{ color: barColor }}
+            >
+              {usedPct}%
+            </span>
+          )}
+        </div>
+
+        {/* Progress bar */}
+        {!isUnlimited ? (
+          <div
+            className="h-1.5 rounded-full overflow-hidden"
+            style={{ background: "var(--border-subtle)" }}
+          >
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${usedPct}%` }}
+              transition={{ duration: 0.9, ease: "easeOut" }}
+              className="h-full rounded-full"
+              style={{ background: barColor }}
+            />
+          </div>
+        ) : (
+          <div
+            className="h-1.5 rounded-full"
+            style={{
+              background:
+                "linear-gradient(90deg, var(--accent) 0%, #8b5cf6 100%)",
+              opacity: 0.3,
+            }}
+          />
+        )}
+
+        {/* Usage numbers */}
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-semibold fc-text-secondary tabular-nums">
+            {fmtMB(usedMB)}
+          </span>
+          <span className="text-[10px] fc-text-muted">
+            {isUnlimited ? "Unlimited" : `of ${maxStorageGB} GB`}
+          </span>
+        </div>
+      </div>
+
+      {/* Version */}
+      <p className="text-[10px] font-black uppercase tracking-widest fc-text-muted mt-3 mb-1">
+        Version
+      </p>
+      <p className="text-xs fc-text-secondary font-mono">FileCloud v1.0</p>
+    </div>
+  );
+}
+
+function SidebarContent({ onClose, storageStats }) {
   const pathname = usePathname();
 
   return (
@@ -86,11 +178,7 @@ function SidebarContent({ onClose }) {
                 className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-colors ${
                   isActive ? "fc-text" : "fc-text-tertiary hover:fc-text"
                 }`}
-                style={
-                  isActive
-                    ? { background: "var(--bg-surface-2)" }
-                    : {}
-                }
+                style={isActive ? { background: "var(--bg-surface-2)" } : {}}
               >
                 {isActive && (
                   <motion.div
@@ -101,7 +189,9 @@ function SidebarContent({ onClose }) {
                 )}
                 <Icon
                   size={16}
-                  style={{ color: isActive ? "var(--accent)" : "var(--text-muted)" }}
+                  style={{
+                    color: isActive ? "var(--accent)" : "var(--text-muted)",
+                  }}
                 />
                 {item.label}
               </motion.div>
@@ -110,20 +200,12 @@ function SidebarContent({ onClose }) {
         })}
       </nav>
 
-      <div
-        className="px-5 py-4 border-t shrink-0"
-        style={{ borderColor: "var(--border-subtle)" }}
-      >
-        <p className="text-[10px] font-black uppercase tracking-widest fc-text-muted mb-1">
-          Version
-        </p>
-        <p className="text-xs fc-text-secondary font-mono">FileCloud v1.0</p>
-      </div>
+      <StorageWidget storageStats={storageStats} />
     </>
   );
 }
 
-export default function Sidebar({ mobileOpen, setMobileOpen }) {
+export default function Sidebar({ mobileOpen, setMobileOpen, storageStats }) {
   return (
     <>
       <aside
@@ -133,7 +215,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
           borderColor: "var(--border-subtle)",
         }}
       >
-        <SidebarContent onClose={null} />
+        <SidebarContent onClose={null} storageStats={storageStats} />
       </aside>
 
       <AnimatePresence>
@@ -145,7 +227,10 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
               exit={{ opacity: 0 }}
               onClick={() => setMobileOpen(false)}
               className="fixed inset-0 z-40 lg:hidden"
-              style={{ background: "rgba(10, 14, 28, 0.5)", backdropFilter: "blur(4px)" }}
+              style={{
+                background: "rgba(10, 14, 28, 0.5)",
+                backdropFilter: "blur(4px)",
+              }}
             />
             <motion.aside
               initial={{ x: -280 }}
@@ -158,7 +243,10 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
                 borderRight: "1px solid var(--border-subtle)",
               }}
             >
-              <SidebarContent onClose={() => setMobileOpen(false)} />
+              <SidebarContent
+                onClose={() => setMobileOpen(false)}
+                storageStats={storageStats}
+              />
             </motion.aside>
           </>
         )}

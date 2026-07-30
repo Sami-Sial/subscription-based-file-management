@@ -14,6 +14,7 @@ export default function Page({ children }) {
   const [subscriptions, setSubscriptions] = useState([]); // full history array
   const [subscriptionLoading, setSubscriptionLoading] = useState(true);
   const [showPlanModal, setShowPlanModal] = useState(false);
+  const [storageStats, setStorageStats] = useState({ usedMB: 0, maxStorageGB: 0, usedPct: 0 });
 
   // Derive the active subscription from the array
   const activeSubscription =
@@ -108,6 +109,14 @@ export default function Page({ children }) {
   useEffect(() => {
     if (!user) return;
     checkSubscription();
+    // Also fetch storage stats
+    const token = localStorage.getItem("token");
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/user/storage-stats`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((d) => { if (d.data) setStorageStats(d.data); })
+      .catch(() => {});
   }, [user]);
 
   // Handle modal close with refresh
@@ -128,7 +137,7 @@ export default function Page({ children }) {
   return (
     <>
       <div className="flex h-screen fc-canvas overflow-hidden">
-        <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+        <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} storageStats={storageStats} />
 
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           <Navbar

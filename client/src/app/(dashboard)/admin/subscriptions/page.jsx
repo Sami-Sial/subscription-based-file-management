@@ -168,7 +168,20 @@ function FormFields({ data, onChange, onToggle }) {
         <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 border-b border-gray-100 pb-2">
           Volume Limits
         </p>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className={labelClass}>Total Storage (GB)</label>
+            <input
+              type="number"
+              name="maxStorageGB"
+              value={data.maxStorageGB}
+              onChange={onChange}
+              placeholder="e.g. 5"
+              className={inputClass}
+              min="0"
+              required
+            />
+          </div>
           <div>
             <label className={labelClass}>Total File Limit</label>
             <input
@@ -263,6 +276,7 @@ const defaultForm = {
   maxNesting: 5,
   fileTypes: { image: true, video: true, pdf: true, audio: false },
   maxFileSizeMB: 500,
+  maxStorageGB: "",
   totalFileLimit: "",
   filesPerFolder: 100,
   priceMonthly: "",
@@ -346,8 +360,8 @@ export default function SubscriptionManagement() {
     setter((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Convert UI state → API payload (fileTypes → allowedTypes array)
-  const buildPayload = ({ fileTypes, ...rest }) => ({
+  // Convert UI state → API payload (fileTypes → allowedTypes array, strip non-schema fields)
+  const buildPayload = ({ fileTypes, priceYearly, ...rest }) => ({
     ...rest,
     allowedTypes: buildAllowedTypes(fileTypes),
   });
@@ -400,6 +414,7 @@ export default function SubscriptionManagement() {
       maxNesting: sub.maxNesting || 0,
       fileTypes: parseAllowedTypes(sub.allowedTypes),
       maxFileSizeMB: sub.maxFileSizeMB || 0,
+      maxStorageGB: sub.maxStorageGB || 0,
       totalFileLimit: sub.totalFileLimit || "",
       filesPerFolder: sub.filesPerFolder || 0,
       priceMonthly: sub.priceMonthly ?? "",
@@ -413,11 +428,24 @@ export default function SubscriptionManagement() {
     e.preventDefault();
 
     if (!validateForm(updateFormData)) return;
-    console.log(selectedSubscription.id);
     setFormLoading(true);
-    console.log(
-      `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/admin/subscriptions/${selectedSubscription.id}`
-    );
+
+    // Explicitly build the payload so no field is accidentally dropped
+    const payload = {
+      name: updateFormData.name,
+      maxFolders: updateFormData.maxFolders,
+      maxNesting: updateFormData.maxNesting,
+      allowedTypes: buildAllowedTypes(updateFormData.fileTypes),
+      maxFileSizeMB: updateFormData.maxFileSizeMB,
+      maxStorageGB: updateFormData.maxStorageGB === "" ? 0 : parseFloat(updateFormData.maxStorageGB) || 0,
+      totalFileLimit: updateFormData.totalFileLimit,
+      filesPerFolder: updateFormData.filesPerFolder,
+      priceMonthly: updateFormData.priceMonthly === "" ? null : parseFloat(updateFormData.priceMonthly),
+      isActive: updateFormData.isActive,
+    };
+
+    console.log("UPDATE PAYLOAD (client):", payload);
+
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/admin/subscriptions/${selectedSubscription.id}`,
@@ -427,7 +455,7 @@ export default function SubscriptionManagement() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify(buildPayload(updateFormData)),
+          body: JSON.stringify(payload),
         }
       );
       const data = await response.json();
@@ -603,6 +631,7 @@ export default function SubscriptionManagement() {
                       "Nesting",
                       "File Types",
                       "Max Size",
+                      "Total Storage",
                       "Total Limit",
                       "Price / mo",
                       "Status",
@@ -677,6 +706,16 @@ export default function SubscriptionManagement() {
                             <span className="text-xs text-gray-400 font-normal">
                               MB
                             </span>
+                          </span>
+                        </td>
+                        <td className="px-5 py-4">
+                          <span className="text-sm font-semibold text-gray-700">
+                            {sub.maxStorageGB === 0 ? "Unlimited" : sub.maxStorageGB}{" "}
+                            {sub.maxStorageGB !== 0 && (
+                              <span className="text-xs text-gray-400 font-normal">
+                                GB
+                              </span>
+                            )}
                           </span>
                         </td>
                         <td className="px-5 py-4">

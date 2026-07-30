@@ -58,6 +58,7 @@ model Subscription {
   totalFileLimit Int
   filesPerFolder Int
   priceMonthly   Float?
+  maxStorageGB   Float    @default(0)
   isActive       Boolean  @default(true)
 
   createdAt        DateTime           @default(now())

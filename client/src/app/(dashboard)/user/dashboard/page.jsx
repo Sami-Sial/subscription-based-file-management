@@ -562,8 +562,9 @@ export default function Dashboard() {
     ? PLAN_ACCENT[plan.name?.toLowerCase()] || C.indigo
     : C.indigo;
   const filePct = plan ? (stats.totalFiles / plan.totalFileLimit) * 100 : 0;
-  const folderPct = plan ? (stats.totalFolders / plan.maxFolders) * 100 : 0;
-  const nestPct = plan ? (stats.maxNesting / plan.maxNesting) * 100 : 0;
+  const folderPct = plan && plan.maxFolders > 0 ? (stats.totalFolders / plan.maxFolders) * 100 : 0;
+  const nestPct = plan && plan.maxNesting > 0 ? (stats.maxNesting / plan.maxNesting) * 100 : 0;
+  const storagePct = plan && plan.maxStorageGB > 0 ? (stats.totalSizeMB / (plan.maxStorageGB * 1024)) * 100 : undefined;
 
   const gaugeData = [
     { name: "Files", value: Math.round(filePct), fill: C.violet },
@@ -661,9 +662,10 @@ export default function Dashboard() {
           <StatCard
             title="Storage Used"
             value={fmtMB(stats.totalSizeMB)}
-            sub={`${plan?.maxFileSizeMB ?? "—"} MB max per file`}
+            sub={plan?.maxStorageGB > 0 ? `of ${plan.maxStorageGB} GB allowed` : `${plan?.maxFileSizeMB ?? "—"} MB max per file`}
             icon={HardDrive}
             accent={C.emerald}
+            pct={storagePct}
             delay={0.15}
           />
           <StatCard
