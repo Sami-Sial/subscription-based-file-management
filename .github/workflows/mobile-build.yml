@@ -34,6 +34,8 @@ jobs:
           npm run build
         env:
           NEXT_PUBLIC_BACKEND_BASE_URL: https://file-cloud-drive-backend.vercel.app
+          NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: ${{ secrets.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME }}
+          NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: ${{ secrets.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET }}
 
       - name: Install Mobile Dependencies & Sync Capacitor
         working-directory: ./mobile
@@ -73,6 +75,8 @@ jobs:
           npm run build
         env:
           NEXT_PUBLIC_BACKEND_BASE_URL: https://file-cloud-drive-backend.vercel.app
+          NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: ${{ secrets.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME }}
+          NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: ${{ secrets.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET }}
 
       - name: Install Mobile Dependencies & Sync Capacitor
         working-directory: ./mobile
