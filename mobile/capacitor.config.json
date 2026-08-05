@@ -1,0 +1,5 @@
+{
+  "appId": "com.fileclouddrive.app",
+  "appName": "File Cloud Drive",
+  "webDir": "../client/out"
+}

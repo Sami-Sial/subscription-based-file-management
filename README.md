@@ -245,3 +245,57 @@ Frontend and Backend can be deployed separately.
 * Database: PostgreSQL (Supabase / Neon / Railway)
 
 ---
+
+# 📱 Mobile Apps (Android & iOS)
+
+This project includes fully functional mobile applications for Android and iOS using **Capacitor**. The mobile apps bundle the statically exported Next.js frontend into a native app shell.
+
+## 🛠️ Mobile Setup
+
+1. **Build the Next.js Client**
+   Before running the mobile app, you must build the client into the `out` directory:
+   ```bash
+   cd client
+   npm install
+   npm run build
+   ```
+
+2. **Sync with Capacitor**
+   Copy the web assets into the native mobile folders:
+   ```bash
+   cd ../mobile
+   npm install
+   npx cap sync
+   ```
+
+## 💻 Opening in Native IDEs
+
+If you want to run the apps locally on emulators or real devices, you can open the native projects directly:
+
+**For Android (Requires Android Studio):**
+```bash
+cd mobile
+npx cap open android
+```
+*This will launch Android Studio. From there, you can click the "Run" button to build and test the APK.*
+
+**For iOS (Requires macOS & Xcode):**
+```bash
+cd mobile
+npx cap open ios
+```
+*This will launch Xcode. Select your simulator or connected iPhone and hit "Run". Note that running on a physical iPhone requires an Apple Developer Account.*
+
+## ☁️ Cloud Builds (GitHub Actions)
+
+If you don't want to install Android Studio or Xcode locally, this repository comes pre-configured with a **GitHub Actions Workflow** (`mobile-build.yml`) to build the apps in the cloud.
+
+Whenever you push to the `main` branch, the workflow will automatically:
+1. Build the Next.js `client`.
+2. Sync the assets to the `mobile` folder.
+3. Build the Android APK (`app-debug.apk`).
+4. Build the iOS Simulator App (`ios-app-simulator`).
+
+You can download these directly from the **Actions > Artifacts** tab on GitHub!
+
+---
