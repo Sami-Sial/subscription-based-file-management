@@ -1,4 +1,4 @@
-# SaaS File Management System
+# Cloud Drive Saas
 
 A full-featured **Subscription-Based File & Folder Management System** where storage capabilities are dynamically controlled by Admin-defined subscription packages.
 
@@ -8,16 +8,16 @@ A full-featured **Subscription-Based File & Folder Management System** where sto
 
 **Backend:**
 
-* Node.js
-* Express.js
-* PostgreSQL
-* Prisma ORM
-* Stripe (Payment Gateway + Webhooks)
-* 2FA Authentication
+- Node.js
+- Express.js
+- PostgreSQL
+- Prisma ORM
+- Stripe (Payment Gateway + Webhooks)
+- 2FA Authentication
 
 **Frontend:**
 
-* Next.js
+- Next.js
 
 ---
 
@@ -30,28 +30,26 @@ Users can manage folders and upload files based on the limits of their active su
 
 ---
 
-
 # 🔐 Core Features
 
 ## 👨‍💼 Admin Panel
 
-* Default seeded admin credentials
-* Create, update, delete subscription packages
-* Define package rules:
+- Default seeded admin credentials
+- Create, update, delete subscription packages
+- Define package rules:
+  - Max Folders
+  - Max Nesting Level
+  - Allowed File Types (Image, Video, PDF, Audio)
+  - Max File Size (MB)
+  - Total File Limit
+  - Files Per Folder
 
-  * Max Folders
-  * Max Nesting Level
-  * Allowed File Types (Image, Video, PDF, Audio)
-  * Max File Size (MB)
-  * Total File Limit
-  * Files Per Folder
-* Admin Dashboard with analytics:
-
-  * Total users
-  * Active subscriptions
-  * Files & folders count
-  * Package distribution
-  * Storage insights
+- Admin Dashboard with analytics:
+  - Total users
+  - Active subscriptions
+  - Files & folders count
+  - Package distribution
+  - Storage insights
 
 ---
 
@@ -59,26 +57,25 @@ Users can manage folders and upload files based on the limits of their active su
 
 ### Authentication
 
-* User Registration
-* Login
-* Email verification
-* Password reset
-* Logged-in user password update
+- User Registration
+- Login
+- Email verification
+- Password reset
+- Logged-in user password update
 
 ### Subscription Management
 
-* View available packages
-* Subscribe / Upgrade / Downgrade
-* Subscription history tracking
+- View available packages
+- Subscribe / Upgrade / Downgrade
+- Subscription history tracking
 
 ### 💳 Stripe Integration
 
-* Stripe Checkout for paid packages
-* Webhook handling for:
-
-  * Payment confirmation
-  * Automatic subscription activation
-  * Subscription updates
+- Stripe Checkout for paid packages
+- Webhook handling for:
+  - Payment confirmation
+  - Automatic subscription activation
+  - Subscription updates
 
 ---
 
@@ -86,19 +83,19 @@ Users can manage folders and upload files based on the limits of their active su
 
 ### Folder Features
 
-* Create folders
-* Create sub-folders
-* Rename folders
-* Delete folders
-* Nesting limited by subscription package
+- Create folders
+- Create sub-folders
+- Rename folders
+- Delete folders
+- Nesting limited by subscription package
 
 ### File Features
 
-* Upload files (Image, Video, Audio, PDF)
-* View files
-* Download files
-* Rename files
-* Package-based validation on every upload
+- Upload files (Image, Video, Audio, PDF)
+- View files
+- Download files
+- Rename files
+- Package-based validation on every upload
 
 ---
 
@@ -108,20 +105,20 @@ Every file and folder action checks the user's active subscription before procee
 
 ### Folder Creation Checks
 
-* Max Folders
-* Max Nesting Level
+- Max Folders
+- Max Nesting Level
 
 ### File Upload Checks
 
-* Allowed File Types
-* Max File Size
-* Total File Limit
-* Files Per Folder Limit
+- Allowed File Types
+- Max File Size
+- Total File Limit
+- Files Per Folder Limit
 
 If a user switches packages:
 
-* New limits apply going forward
-* Existing files/folders are NOT deleted
+- New limits apply going forward
+- Existing files/folders are NOT deleted
 
 ---
 
@@ -129,31 +126,30 @@ If a user switches packages:
 
 ## Admin Dashboard
 
-* User analytics
-* Subscription analytics
-* Storage metrics
-* Tier distribution
+- User analytics
+- Subscription analytics
+- Storage metrics
+- Tier distribution
 
 ## User Dashboard
 
-* Active subscription details
-* Storage usage
-* Total folders and files
-* Subscription status
+- Active subscription details
+- Storage usage
+- Total folders and files
+- Subscription status
 
 ---
 
 # 🗄️ Database Design
 
-* Well-structured relational schema
-* Prisma ORM for type-safe queries
-* Strong relationships between:
-
-  * Users
-  * Subscriptions
-  * Packages
-  * Folders
-  * Files
+- Well-structured relational schema
+- Prisma ORM for type-safe queries
+- Strong relationships between:
+  - Users
+  - Subscriptions
+  - Packages
+  - Folders
+  - Files
 
 All business rules are enforced at the backend service layer.
 
@@ -240,9 +236,9 @@ npm run dev
 
 Frontend and Backend can be deployed separately.
 
-* Backend: Vercel / Render / Railway
-* Frontend: Vercel / Netlify
-* Database: PostgreSQL (Supabase / Neon / Railway)
+- Backend: Vercel / Render / Railway
+- Frontend: Vercel / Netlify
+- Database: PostgreSQL (Supabase / Neon / Railway)
 
 ---
 
@@ -254,6 +250,7 @@ This project includes fully functional mobile applications for Android and iOS u
 
 1. **Build the Next.js Client**
    Before running the mobile app, you must build the client into the `out` directory:
+
    ```bash
    cd client
    npm install
@@ -273,24 +270,29 @@ This project includes fully functional mobile applications for Android and iOS u
 If you want to run the apps locally on emulators or real devices, you can open the native projects directly:
 
 **For Android (Requires Android Studio):**
+
 ```bash
 cd mobile
 npx cap open android
 ```
-*This will launch Android Studio. From there, you can click the "Run" button to build and test the APK.*
+
+_This will launch Android Studio. From there, you can click the "Run" button to build and test the APK._
 
 **For iOS (Requires macOS & Xcode):**
+
 ```bash
 cd mobile
 npx cap open ios
 ```
-*This will launch Xcode. Select your simulator or connected iPhone and hit "Run". Note that running on a physical iPhone requires an Apple Developer Account.*
+
+_This will launch Xcode. Select your simulator or connected iPhone and hit "Run". Note that running on a physical iPhone requires an Apple Developer Account._
 
 ## ☁️ Cloud Builds (GitHub Actions)
 
 If you don't want to install Android Studio or Xcode locally, this repository comes pre-configured with a **GitHub Actions Workflow** (`mobile-build.yml`) to build the apps in the cloud.
 
 Whenever you push to the `main` branch, the workflow will automatically:
+
 1. Build the Next.js `client`.
 2. Sync the assets to the `mobile` folder.
 3. Build the Android APK (`app-debug.apk`).
