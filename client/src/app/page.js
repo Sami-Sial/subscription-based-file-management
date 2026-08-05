@@ -193,7 +193,7 @@ export default function LandingPage() {
       width: "600px",
       height: "600px",
       borderRadius: "50%",
-      background: "radial-gradient(circle, rgba(234,68,8,0.12) 0%, transparent 65%)",
+      background: "radial-gradient(circle, rgba(234,68,8,0.25) 0%, transparent 65%)",
       filter: "blur(40px)",
     }}
   />
@@ -218,167 +218,202 @@ export default function LandingPage() {
       width: "900px",
       height: "500px",
       borderRadius: "50%",
-      background: "radial-gradient(ellipse, rgba(234,68,8,0.07) 0%, transparent 70%)",
+      background: "radial-gradient(ellipse, rgba(234,68,8,0.2) 0%, transparent 70%)",
       filter: "blur(60px)",
     }}
   />
 
-  <div className="relative max-w-6xl mx-auto px-6 md:px-10 pt-20 pb-16 md:pt-28 md:pb-20">
-    <div className="flex flex-col items-center text-center gap-6 fc-anim-fadeUp">
-      {/* Badge */}
-      <div className="inline-flex w-fit">
-        <span
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-[0.15em]"
-          style={{
-            background: "var(--accent-soft)",
-            color: "var(--accent)",
-            border: "1px solid var(--accent-ring)",
-          }}
-        >
+  <div className="relative max-w-7xl mx-auto px-6 md:px-10 pt-20 pb-16 md:pt-28 md:pb-20">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+      {/* Left Text */}
+      <div className="flex flex-col items-start text-left gap-6 fc-anim-fadeUp">
+        {/* Badge */}
+        <div className="inline-flex w-fit">
           <span
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-[0.15em]"
             style={{
-              width: 6,
-              height: 6,
-              borderRadius: "50%",
-              background: "var(--accent)",
-              display: "inline-block",
-              boxShadow: "0 0 6px 2px rgba(234,68,8,0.5)",
-              animation: "fc-pulse-dot 2s ease-in-out infinite",
+              background: "var(--accent-soft)",
+              color: "var(--accent)",
+              border: "1px solid var(--accent)",
             }}
-          />
-          Enterprise-grade File Storage
-        </span>
-      </div>
-
-      {/* Headline */}
-      <h1
-        className="font-extrabold fc-text leading-[1.05]"
-        style={{ fontSize: "clamp(2.2rem, 4vw, 3.2rem)", letterSpacing: "-0.04em", maxWidth: "20ch" }}
-      >
-        Storage that{" "}
-        <span
-          style={{
-            background: "linear-gradient(135deg, var(--accent) 0%, #ff9a5c 50%, var(--accent) 100%)",
-            backgroundSize: "200% auto",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-            animation: "fc-text-shimmer 3s linear infinite",
-          }}
-        >
-          never breaks
-        </span>{" "}
-        your rules.
-      </h1>
-
-      {/* Sub-copy */}
-      <p className="fc-text-tertiary leading-relaxed" style={{ fontSize: "1.05rem", maxWidth: "58ch" }}>
-        FileCloud validates every upload, folder, and quota against your
-        subscription plan — server-side, every time. Built for teams
-        that need predictable, policy-driven storage.
-      </p>
-
-      {/* CTAs */}
-      <div className="flex flex-col sm:flex-row items-center gap-3 mt-1">
-        <Link
-          href="/register"
-          data-testid="hero-primary-cta"
-          className="inline-flex items-center gap-2 font-bold rounded-2xl"
-          style={{
-            background: "var(--accent)",
-            color: "white",
-            padding: "0.75rem 1.75rem",
-            fontSize: "0.9rem",
-            boxShadow: "0 4px 20px -4px rgba(234,68,8,0.45), 0 0 0 1px rgba(234,68,8,0.15)",
-            transition: "all 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--accent-hover)";
-            e.currentTarget.style.transform = "translateY(-2px)";
-            e.currentTarget.style.boxShadow = "0 8px 28px -4px rgba(234,68,8,0.55), 0 0 0 1px rgba(234,68,8,0.2)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "var(--accent)";
-            e.currentTarget.style.transform = "translateY(0)";
-            e.currentTarget.style.boxShadow = "0 4px 20px -4px rgba(234,68,8,0.45), 0 0 0 1px rgba(234,68,8,0.15)";
-          }}
-        >
-          Get started free
-          <ArrowRight size={16} />
-        </Link>
-        <Link
-          href="/features"
-          data-testid="hero-features-cta"
-          className="inline-flex items-center gap-2 font-semibold rounded-2xl fc-text-secondary"
-          style={{
-            background: "var(--bg-surface)",
-            border: "1px solid var(--border-default)",
-            padding: "0.75rem 1.75rem",
-            fontSize: "0.9rem",
-            transition: "all 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = "var(--border-strong)";
-            e.currentTarget.style.background = "var(--bg-surface-2)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = "var(--border-default)";
-            e.currentTarget.style.background = "var(--bg-surface)";
-          }}
-        >
-          Explore features
-        </Link>
-      </div>
-
-      {/* Trust badges — no icons */}
-      <div className="flex items-center justify-center gap-5 pt-1 flex-wrap">
-        {[
-          "Backend-enforced quotas",
-          "Unlimited nesting",
-          "Instant activation",
-        ].map((label) => (
-          <div key={label} className="flex items-center gap-1.5 text-xs fc-text-muted font-medium">
+          >
             <span
               style={{
-                width: 5,
-                height: 5,
+                width: 6,
+                height: 6,
                 borderRadius: "50%",
                 background: "var(--accent)",
                 display: "inline-block",
-                flexShrink: 0,
+                boxShadow: "0 0 6px 2px rgba(234,68,8,0.6)",
+                animation: "fc-pulse-dot 2s ease-in-out infinite",
               }}
             />
-            {label}
-          </div>
-        ))}
-      </div>
+            Enterprise-grade File Storage
+          </span>
+        </div>
 
-      {/* Stat strip — replaces the removed dashboard mock, gives the section width/weight without a screenshot look */}
-      <div
-        className="w-full mt-6 pt-6"
-        style={{ borderTop: "1px solid var(--border-subtle)", maxWidth: "640px" }}
-      >
-        <div className="grid grid-cols-3 gap-6">
+        {/* Headline */}
+        <h1
+          className="font-extrabold fc-text leading-[1.05]"
+          style={{ fontSize: "clamp(2.2rem, 4vw, 3.2rem)", letterSpacing: "-0.04em", maxWidth: "20ch" }}
+        >
+          Storage that{" "}
+          <span
+            style={{
+              backgroundImage: "linear-gradient(135deg, var(--accent) 0%, #ff9a5c 50%, var(--accent) 100%)",
+              backgroundSize: "200% auto",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              color: "transparent",
+            }}
+          >
+            never breaks
+          </span>{" "}
+          your rules.
+        </h1>
+
+        {/* Sub-copy */}
+        <p className="fc-text-tertiary leading-relaxed" style={{ fontSize: "1.05rem", maxWidth: "58ch" }}>
+          FileCloud validates every upload, folder, and quota against your
+          subscription plan — server-side, every time. Built for teams
+          that need predictable, policy-driven storage.
+        </p>
+
+        {/* CTAs */}
+        <div className="flex flex-col sm:flex-row items-center gap-3 mt-1">
+          <Link
+            href="/register"
+            data-testid="hero-primary-cta"
+            className="inline-flex items-center gap-2 font-bold rounded-2xl"
+            style={{
+              background: "var(--accent)",
+              color: "white",
+              padding: "0.85rem 2rem",
+              fontSize: "0.95rem",
+              boxShadow: "0 4px 20px -2px rgba(234,68,8,0.6), 0 0 0 2px rgba(234,68,8,0.3)",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--accent-hover)";
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow = "0 8px 28px -4px rgba(234,68,8,0.7), 0 0 0 2px rgba(234,68,8,0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "var(--accent)";
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 4px 20px -2px rgba(234,68,8,0.6), 0 0 0 2px rgba(234,68,8,0.3)";
+            }}
+          >
+            Get started free
+            <ArrowRight size={16} />
+          </Link>
+          <Link
+            href="/features"
+            data-testid="hero-features-cta"
+            className="inline-flex items-center gap-2 font-bold rounded-2xl fc-text-primary"
+            style={{
+              background: "var(--bg-surface)",
+              border: "2px solid var(--border-strong)",
+              padding: "0.85rem 2rem",
+              fontSize: "0.95rem",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--text-secondary)";
+              e.currentTarget.style.background = "var(--bg-surface-2)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--border-strong)";
+              e.currentTarget.style.background = "var(--bg-surface)";
+            }}
+          >
+            Explore features
+          </Link>
+        </div>
+
+        {/* Trust badges — no icons */}
+        <div className="flex items-center gap-5 pt-1 flex-wrap">
           {[
-            { value: "50K+", label: "Files stored daily" },
-            { value: "99.99%", label: "Quota accuracy" },
-            { value: "<40ms", label: "Validation latency" },
-          ].map(({ value, label }) => (
-            <div key={label} className="flex flex-col items-center gap-1">
+            "Backend-enforced quotas",
+            "Unlimited nesting",
+            "Instant activation",
+          ].map((label) => (
+            <div key={label} className="flex items-center gap-1.5 text-xs fc-text-muted font-medium">
               <span
-                className="font-extrabold"
-                style={{ fontSize: "1.4rem", letterSpacing: "-0.03em", color: "var(--accent)" }}
-              >
-                {value}
-              </span>
-              <span
-                className="text-xs fc-text-muted font-medium text-center"
-                style={{ lineHeight: 1.3 }}
-              >
-                {label}
-              </span>
+                style={{
+                  width: 5,
+                  height: 5,
+                  borderRadius: "50%",
+                  background: "var(--accent)",
+                  display: "inline-block",
+                  flexShrink: 0,
+                }}
+              />
+              {label}
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Right UI Mockup */}
+      <div className="hidden lg:flex justify-end w-full fc-anim-fadeUp" style={{ animationDelay: "0.2s" }}>
+        <div 
+          className="relative w-full max-w-md rounded-2xl overflow-hidden border shadow-2xl"
+          style={{ 
+            borderColor: "var(--border-subtle)", 
+            background: "var(--bg-surface)",
+            boxShadow: "0 25px 50px -12px rgba(10, 14, 28, 0.15)"
+          }}
+        >
+          {/* Header */}
+          <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: "var(--border-default)", background: "var(--bg-surface-2)" }}>
+            <div className="flex gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-red-400"></div>
+              <div className="w-3 h-3 rounded-full bg-amber-400"></div>
+              <div className="w-3 h-3 rounded-full bg-green-400"></div>
+            </div>
+            <div className="ml-4 text-xs font-semibold fc-text-secondary flex items-center gap-2">
+              <Cloud size={14} /> My Drive
+            </div>
+          </div>
+          
+          {/* Body */}
+          <div className="p-5 flex flex-col gap-5">
+            <div className="flex items-center justify-between">
+              <div className="font-bold fc-text text-sm">Recent Files</div>
+              <div className="px-3 py-1.5 text-xs rounded-lg font-bold flex items-center gap-1 cursor-pointer hover:opacity-90 transition-opacity" style={{ background: "var(--accent)", color: "#fff" }}>
+                <Upload size={14} /> Upload
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { name: "Project_Proposal.pdf", icon: FileText, color: "text-rose-500", size: "2.4 MB" },
+                { name: "Brand_Assets.zip", icon: FolderTree, color: "text-sky-500", size: "14 MB" },
+                { name: "Hero_Image.jpg", icon: Camera, color: "text-violet-500", size: "4.1 MB" },
+                { name: "Q3_Report.xlsx", icon: FileText, color: "text-emerald-500", size: "1.2 MB" }
+              ].map((file) => (
+                <div key={file.name} className="flex items-start gap-3 p-3 rounded-xl border hover:shadow-sm transition-all" style={{ borderColor: "var(--border-default)", background: "var(--bg-canvas)" }}>
+                  <file.icon className={`w-8 h-8 shrink-0 ${file.color}`} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13px] font-bold fc-text truncate">{file.name}</p>
+                    <p className="text-[11px] font-medium fc-text-tertiary mt-0.5">{file.size}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-1 p-4 rounded-xl border flex flex-col gap-3" style={{ borderColor: "var(--border-default)", background: "var(--bg-surface-2)" }}>
+               <div className="flex items-center justify-between">
+                 <span className="text-[13px] font-bold fc-text">Storage Usage</span>
+                 <span className="text-xs font-bold" style={{ color: "var(--accent)" }}>45%</span>
+               </div>
+               <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: "var(--border-default)" }}>
+                 <div className="h-full rounded-full" style={{ width: "45%", background: "var(--accent)" }}></div>
+               </div>
+               <div className="text-[11px] font-medium fc-text-tertiary">45 GB used of 100 GB (Gold Plan)</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -586,6 +621,7 @@ export default function LandingPage() {
                 const types = Array.isArray(plan.allowedTypes) ? plan.allowedTypes : [];
 
                 const rows = [
+                  { text: plan.maxStorageGB ? `${plan.maxStorageGB} GB total storage` : "Unlimited storage", ok: true },
                   { text: `${plan.maxFolders} max folders`, ok: true },
                   { text: `${plan.maxNesting} nesting levels`, ok: true },
                   { text: `${plan.maxFileSizeMB} MB per file`, ok: true },

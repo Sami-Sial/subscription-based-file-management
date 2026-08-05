@@ -930,15 +930,42 @@ function FileRow({ file, onDeleted, onRenamed }) {
 
   return (
     <>
-      <div className="relative flex items-center gap-3 px-4 py-3 hover:bg-slate-50 rounded-xl group transition-colors overflow-visible">
+      <div className="relative flex flex-col gap-3 px-4 py-4 bg-white border border-slate-200 hover:border-slate-300 hover:shadow-lg rounded-2xl group transition-all shadow-sm overflow-visible h-full">
         <div
-          className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
+          className="flex items-start justify-between cursor-pointer"
           onClick={() => !renaming && setViewModal(true)}
         >
-          <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 shadow-sm">
             {getFileIcon(file.format)}
           </div>
-          <div className="flex-1 min-w-0">
+          
+          {!renaming && (
+            <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setViewModal(true);
+                }}
+                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 cursor-pointer transition-colors"
+                title="Preview"
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+              <button
+                ref={threeDotsRef}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen((v) => !v);
+                }}
+                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 cursor-pointer transition-colors"
+              >
+                <MoreVertical className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 min-w-0 mt-2">
             {renaming ? (
               // FIX 2: Pass originalName so InlineRename can lock the extension
               <InlineRename
@@ -953,37 +980,11 @@ function FileRow({ file, onDeleted, onRenamed }) {
                 {file.name}
               </p>
             )}
-            <p className="text-xs text-slate-400 mt-0.5 capitalize">
-              {file.format} · {formatSize(file.sizeMB)}
+            <p className="text-xs text-slate-400 mt-1 capitalize font-medium flex items-center justify-between">
+              <span>{file.format}</span>
+              <span>{formatSize(file.sizeMB)}</span>
             </p>
           </div>
-        </div>
-
-        {!renaming && (
-          <>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setViewModal(true);
-              }}
-              className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-slate-200 text-slate-400 cursor-pointer transition-opacity shrink-0"
-              title="Preview"
-            >
-              <Eye className="w-4 h-4" />
-            </button>
-
-            <button
-              ref={threeDotsRef}
-              onClick={(e) => {
-                e.stopPropagation();
-                setMenuOpen((v) => !v);
-              }}
-              className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-slate-200 text-slate-400 cursor-pointer transition-opacity shrink-0"
-            >
-              <MoreVertical className="w-4 h-4" />
-            </button>
-          </>
-        )}
 
         {menuOpen && (
           <ContextMenu
@@ -1091,10 +1092,10 @@ function FolderRow({ folder, onOpen, onDeleted, onRenamed }) {
     <>
       <div
         onClick={() => !renaming && onOpen(folder)}
-        className="relative flex items-center gap-3 px-4 py-3 hover:bg-[#5048e5]/5 rounded-xl group transition-colors cursor-pointer overflow-visible"
+        className="relative flex items-center gap-3.5 px-4 py-3.5 bg-slate-50/50 hover:bg-white border border-slate-200 hover:border-[#5048e5]/40 rounded-2xl group transition-all shadow-sm hover:shadow-md cursor-pointer overflow-visible"
       >
-        <div className="w-8 h-8 rounded-lg bg-[#5048e5]/10 flex items-center justify-center shrink-0">
-          <Folder className="w-4 h-4 text-[#5048e5]" />
+        <div className="w-10 h-10 rounded-xl bg-[#5048e5]/10 border border-[#5048e5]/5 flex items-center justify-center shrink-0">
+          <Folder className="w-4.5 h-4.5 text-[#5048e5]" />
         </div>
         <div className="flex-1 min-w-0">
           {renaming ? (
@@ -1379,37 +1380,41 @@ export default function FileManager() {
               </p>
             </div>
           ) : (
-            <div className="space-y-1">
+            <div className="space-y-8">
               {visibleFolders.length > 0 && (
-                <div className="mb-3">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 px-4 mb-1">
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3 px-1">
                     Folders ({visibleFolders.length})
                   </p>
-                  {visibleFolders.map((folder) => (
-                    <FolderRow
-                      key={folder.id}
-                      folder={folder}
-                      onOpen={openFolder}
-                      onDeleted={onFolderDeleted}
-                      onRenamed={onFolderRenamed}
-                    />
-                  ))}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+                    {visibleFolders.map((folder) => (
+                      <FolderRow
+                        key={folder.id}
+                        folder={folder}
+                        onOpen={openFolder}
+                        onDeleted={onFolderDeleted}
+                        onRenamed={onFolderRenamed}
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
 
               {visibleFiles.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 px-4 mb-1 mt-3">
+                  <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3 px-1">
                     Files ({visibleFiles.length})
                   </p>
-                  {visibleFiles.map((file) => (
-                    <FileRow
-                      key={file.id}
-                      file={file}
-                      onDeleted={onFileDeleted}
-                      onRenamed={onFileRenamed}
-                    />
-                  ))}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    {visibleFiles.map((file) => (
+                      <FileRow
+                        key={file.id}
+                        file={file}
+                        onDeleted={onFileDeleted}
+                        onRenamed={onFileRenamed}
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

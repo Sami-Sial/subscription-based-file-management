@@ -10,6 +10,7 @@ import {
   Clock,
   Settings,
   X,
+  BarChart2,
 } from "lucide-react";
 import Logo from "@/components/Logo";
 
@@ -17,6 +18,7 @@ const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/user/dashboard" },
   { label: "My Drive", icon: HardDrive, href: "/user/drive" },
   { label: "Recent", icon: Clock, href: "/user/recent" },
+  { label: "Stats", icon: BarChart2, href: "/user/stats" },
   { label: "Subscriptions", icon: Package, href: "/user/subscriptions" },
   { label: "Settings", icon: Settings, href: "/user/settings" },
 ];

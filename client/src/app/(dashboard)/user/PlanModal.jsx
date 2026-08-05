@@ -286,6 +286,13 @@ export default function PlanModal({
 
                           <div className="flex-1 space-y-3 mb-6 text-xs">
                             <div className="flex items-center justify-between">
+                              <span className="text-gray-600">Total Storage</span>
+                              <span className="font-bold text-gray-900 text-sm">
+                                {sub.maxStorageGB ? `${sub.maxStorageGB} GB` : "Unlimited"}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center justify-between">
                               <span className="text-gray-600">Max Folders</span>
                               <span className="font-bold text-gray-900 text-sm">
                                 {sub.maxFolders ?? "Unlimited"}

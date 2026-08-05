@@ -135,6 +135,7 @@ export default function FeaturesPage() {
 
   const rowSpec = [
     { label: "Monthly price", key: "priceMonthly", format: (v) => `$${v ?? 0}` },
+    { label: "Total storage", key: "maxStorageGB", format: (v) => v ? `${v} GB` : "Unlimited" },
     { label: "Max folders", key: "maxFolders" },
     { label: "Nesting depth", key: "maxNesting" },
     { label: "Max file size", key: "maxFileSizeMB", format: (v) => `${v} MB` },

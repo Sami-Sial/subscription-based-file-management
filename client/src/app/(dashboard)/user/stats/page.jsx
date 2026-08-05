@@ -18,6 +18,8 @@ import {
   Globe,
   Shield,
   ChevronDown,
+  FolderOpen,
+  ChevronRight,
 } from "lucide-react";
 
 function getToken() {
@@ -553,6 +555,84 @@ function CollapsibleSection({
   );
 }
 
+// ─── Folder Tree Node ─────────────────────────────────────────────────────────
+function FolderNode({ folder, depth = 0 }) {
+  const [open, setOpen] = useState(depth === 0);
+  const hasChildren = folder.subfolders?.length > 0 || folder.files?.length > 0;
+  const fileCount = folder.files?.length || 0;
+  const subCount = folder.subfolders?.length || 0;
+
+  const depthColors = ["#5048e5", "#8b5cf6", "#0ea5e9", "#10b981", "#f59e0b", "#f43f5e"];
+  const accent = depthColors[depth % depthColors.length];
+
+  return (
+    <div className={depth > 0 ? "ml-4 border-l border-slate-100 pl-3" : ""}>
+      <div
+        className="flex items-center gap-2 py-2 px-2 rounded-lg hover:bg-slate-50 cursor-pointer group transition-colors"
+        onClick={() => hasChildren && setOpen((o) => !o)}
+      >
+        <div className="w-4 h-4 shrink-0 flex items-center justify-center">
+          {hasChildren ? (
+            open ? <ChevronDown className="w-3 h-3 text-slate-400" /> : <ChevronRight className="w-3 h-3 text-slate-400" />
+          ) : (
+            <span className="w-1 h-1 rounded-full bg-slate-200 mx-auto" />
+          )}
+        </div>
+        <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style={{ background: `${accent}15` }}>
+          {open ? <FolderOpen className="w-3.5 h-3.5" style={{ color: accent }} /> : <Folder className="w-3.5 h-3.5" style={{ color: accent }} />}
+        </div>
+        <span className="text-sm font-semibold text-slate-700 flex-1 truncate">{folder.name}</span>
+        <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          {subCount > 0 && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-slate-100 text-slate-500">{subCount} sub</span>}
+          {fileCount > 0 && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: `${accent}15`, color: accent }}>{fileCount} files</span>}
+        </div>
+        {fileCount > 0 && (
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold group-hover:opacity-0 transition-opacity" style={{ background: `${accent}15`, color: accent }}>{fileCount}</span>
+        )}
+      </div>
+      {open && hasChildren && (
+        <div className="overflow-hidden">
+          {folder.files?.length > 0 && (
+            <div className="ml-4 border-l border-slate-100 pl-3">
+              {folder.files.map((file, i) => (
+                <div key={file.id || i} className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-slate-50 transition-colors">
+                  <span className="text-xs text-slate-600 flex-1 truncate">{file.name}</span>
+                  <span className="text-[10px] text-slate-400 shrink-0">{fmtMB(file.sizeMB)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {folder.subfolders?.map((sub, i) => (
+            <FolderNode key={sub.id || i} folder={sub} depth={depth + 1} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Folder Explorer ──────────────────────────────────────────────────────────
+function FolderExplorer({ folders, emptyMsg }) {
+  if (!folders || folders.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-10 text-slate-300 bg-white rounded-xl border border-slate-200 mt-4">
+        <Folder className="w-10 h-10 mb-2" />
+        <p className="text-xs font-medium">{emptyMsg || "No folders found"}</p>
+      </div>
+    );
+  }
+  return (
+    <div className="mt-4 bg-white rounded-xl border border-slate-200 p-4 max-h-96 overflow-y-auto scrollbar-thin">
+      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Folder Tree</p>
+      <div className="space-y-0.5">
+        {folders.map((folder, i) => (
+          <FolderNode key={folder.id || i} folder={folder} depth={0} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function StorageStats() {
@@ -560,6 +640,8 @@ export default function StorageStats() {
   const [plan, setPlan] = useState(null);
   const [allStats, setAllStats] = useState(null);
   const [subStats, setSubStats] = useState(null);
+  const [allFolders, setAllFolders] = useState([]);
+  const [subFolders, setSubFolders] = useState([]);
   const [error, setError] = useState(false);
 
   useEffect(() => {
@@ -578,6 +660,8 @@ export default function StorageStats() {
         const active = (subData.data || []).find((s) => s.status === "active");
         if (active?.subscription) setPlan(active.subscription);
 
+        setAllFolders(allFolderData.data || []);
+        setSubFolders(subFolderData.data || []);
         setAllStats(computeStats(allFolderData.data || []));
         setSubStats(computeStats(subFolderData.data || []));
       })
@@ -628,12 +712,15 @@ export default function StorageStats() {
         defaultOpen={true}
       >
         {allStats && (
-          <StatGrid
-            stats={allStats}
-            plan={null}
-            accent="#5048e5"
-            showPlan={false}
-          />
+          <>
+            <StatGrid
+              stats={allStats}
+              plan={null}
+              accent="#5048e5"
+              showPlan={false}
+            />
+            <FolderExplorer folders={allFolders} emptyMsg="No folders found" />
+          </>
         )}
       </CollapsibleSection>
 
@@ -658,12 +745,15 @@ export default function StorageStats() {
         defaultOpen={true}
       >
         {subStats && (
-          <StatGrid
-            stats={subStats}
-            plan={plan}
-            accent="#10b981"
-            showPlan={true}
-          />
+          <>
+            <StatGrid
+              stats={subStats}
+              plan={plan}
+              accent="#10b981"
+              showPlan={true}
+            />
+            <FolderExplorer folders={subFolders} emptyMsg="No subscription folders found" />
+          </>
         )}
       </CollapsibleSection>
     </div>

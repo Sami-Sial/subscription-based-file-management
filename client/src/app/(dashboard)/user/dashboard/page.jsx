@@ -400,83 +400,6 @@ function FolderNode({ folder, depth = 0 }) {
   );
 }
 
-// ─── Folder Explorer Panel ────────────────────────────────────────────────────
-
-function FolderExplorer({
-  folders,
-  label,
-  accent,
-  icon: Icon,
-  badge,
-  emptyMsg,
-  delay = 0,
-}) {
-  const totalFolders = folders?.length || 0;
-  const totalFiles =
-    folders?.reduce((s, f) => s + (f.files?.length || 0), 0) || 0;
-
-  return (
-    <Card delay={delay} className="flex flex-col">
-      <div className="flex items-start justify-between mb-1">
-        <SectionLabel>{label}</SectionLabel>
-        <div className="flex items-center gap-2 -mt-0.5">
-          {badge && (
-            <span
-              className="text-[10px] font-black px-2 py-0.5 rounded-full"
-              style={{ background: `${accent}15`, color: accent }}
-            >
-              {badge}
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Summary strip */}
-      <div
-        className="flex items-center gap-4 px-3 py-2.5 rounded-xl mb-4"
-        style={{ background: `${accent}08`, border: `1px solid ${accent}20` }}
-      >
-        <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-          style={{ background: `${accent}15` }}
-        >
-          <Icon className="w-4 h-4" style={{ color: accent }} />
-        </div>
-        <div className="flex items-center gap-5 flex-1">
-          <div>
-            <p className="text-lg font-black text-slate-900 leading-none">
-              {totalFolders}
-            </p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Folders</p>
-          </div>
-          <div className="w-px h-8 bg-slate-200" />
-          <div>
-            <p className="text-lg font-black text-slate-900 leading-none">
-              {totalFiles}
-            </p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Files</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Tree */}
-      {!folders || folders.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-10 text-slate-300">
-          <Folder className="w-10 h-10 mb-2" />
-          <p className="text-xs font-medium">
-            {emptyMsg || "No folders found"}
-          </p>
-        </div>
-      ) : (
-        <div className="max-h-80 overflow-y-auto scrollbar-thin space-y-0.5 pr-1">
-          {folders.map((folder, i) => (
-            <FolderNode key={folder.id || i} folder={folder} depth={0} />
-          ))}
-        </div>
-      )}
-    </Card>
-  );
-}
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
@@ -487,10 +410,6 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  // New states for folder explorer sections
-  const [allFolders, setAllFolders] = useState([]);
-  const [subFolders, setSubFolders] = useState([]);
-  const [foldersLoading, setFoldersLoading] = useState(true);
 
   const fetchData = async () => {
     const headers = { Authorization: `Bearer ${getToken()}` };
@@ -519,30 +438,9 @@ export default function Dashboard() {
     }
   };
 
-  const fetchFolderExplorers = async () => {
-    setFoldersLoading(true);
-    const headers = { Authorization: `Bearer ${getToken()}` };
-    try {
-      const [allRes, subRes] = await Promise.all([
-        fetch(`${BASE}/api/user/all-folders`, { headers }),
-        fetch(`${BASE}/api/user/active-subscription-folders`, { headers }),
-      ]);
-      const [allData, subData] = await Promise.all([
-        allRes.json(),
-        subRes.json(),
-      ]);
-      setAllFolders(allData.data || []);
-      setSubFolders(subData.data || []);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setFoldersLoading(false);
-    }
-  };
 
   useEffect(() => {
     fetchData();
-    fetchFolderExplorers();
   }, []);
 
   if (loading) {
@@ -1105,50 +1003,7 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* ── Folder Explorers ── */}
-        {foldersLoading ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-4"
-          >
-            {[0, 1].map((i) => (
-              <div
-                key={i}
-                className="rounded-2xl bg-white border border-slate-200 shadow-sm p-5 h-64 flex items-center justify-center"
-              >
-                <div className="flex flex-col items-center gap-2 text-slate-300">
-                  <Cloud className="w-7 h-7 animate-pulse" />
-                  <p className="text-xs font-medium">Loading folders...</p>
-                </div>
-              </div>
-            ))}
-          </motion.div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* All Folders */}
-            <FolderExplorer
-              folders={allFolders}
-              label="All Folders"
-              accent={C.indigo}
-              icon={Globe}
-              badge={`${allFolders.length} root`}
-              emptyMsg="No folders found"
-              delay={0.5}
-            />
 
-            {/* Active Subscription Folders */}
-            <FolderExplorer
-              folders={subFolders}
-              label="Active Subscription Folders"
-              accent={C.emerald}
-              icon={Shield}
-              badge={plan ? plan.name : "Subscription"}
-              emptyMsg="No subscription folders"
-              delay={0.55}
-            />
-          </div>
-        )}
 
         {/* ── Recent Files ── */}
         {stats.recent.length > 0 && (

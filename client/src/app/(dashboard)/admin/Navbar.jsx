@@ -65,25 +65,6 @@ export default function Navbar({ onMenuToggle, user, role = "user" }) {
           <Settings size={15} />
         </button>
 
-        {user?.name && (
-          <div
-            className="hidden sm:flex items-center gap-2.5 h-9 pl-1 pr-3 rounded-xl"
-            style={{
-              background: "var(--bg-surface-2)",
-              border: "1px solid var(--border-subtle)",
-            }}
-          >
-            <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white"
-              style={{ background: "var(--accent)" }}
-            >
-              {initial}
-            </div>
-            <span className="text-xs font-bold fc-text truncate max-w-[100px]">
-              {firstName}
-            </span>
-          </div>
-        )}
 
         <motion.button
           whileTap={{ scale: 0.97 }}
