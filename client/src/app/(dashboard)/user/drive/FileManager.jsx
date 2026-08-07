@@ -237,7 +237,7 @@ function FileViewModal({ file, onClose }) {
             style={{ height: "58vh" }}
           >
             <iframe
-              src={typeof window !== "undefined" && window.Capacitor?.isNativePlatform() ? `https://docs.google.com/viewer?url=${encodeURIComponent(file.url)}&embedded=true` : file.url}
+              src={`https://docs.google.com/viewer?url=${encodeURIComponent(file.url)}&embedded=true`}
               className="w-full h-full"
               title={file.name}
             />

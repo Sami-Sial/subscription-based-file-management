@@ -337,7 +337,7 @@ function FileViewModal({ file, onClose }) {
         return (
           <div className="w-full h-full bg-slate-100">
             <iframe
-              src={typeof window !== "undefined" && window.Capacitor?.isNativePlatform() ? `https://docs.google.com/viewer?url=${encodeURIComponent(file.url)}&embedded=true` : file.url}
+              src={`https://docs.google.com/viewer?url=${encodeURIComponent(file.url)}&embedded=true`}
               className="w-full h-full border-0"
               title={file.name}
             />
