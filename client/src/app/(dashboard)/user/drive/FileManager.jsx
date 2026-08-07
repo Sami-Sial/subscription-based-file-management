@@ -1,5 +1,8 @@
 "use client";
 
+import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Folder,
@@ -163,7 +166,24 @@ function FileViewModal({ file, onClose }) {
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      const res = await fetch(file.url);
+      let downloadUrl = file.url;
+      // Force attachment for Cloudinary URLs
+      if (downloadUrl.includes("/upload/")) {
+        downloadUrl = downloadUrl.replace("/upload/", "/upload/fl_attachment/");
+      }
+
+      // Check if running as a Capacitor native app
+      if (typeof window !== "undefined" && Capacitor.isNativePlatform()) {
+        try {
+          await Browser.open({ url: downloadUrl });
+        } catch {
+          window.open(downloadUrl, "_blank");
+        }
+        return;
+      }
+
+      // Web fallback
+      const res = await fetch(downloadUrl);
       const blob = await res.blob();
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
