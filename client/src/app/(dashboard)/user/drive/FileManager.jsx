@@ -167,8 +167,8 @@ function FileViewModal({ file, onClose }) {
     setDownloading(true);
     try {
       let downloadUrl = file.url;
-      // Force attachment for Cloudinary URLs
-      if (downloadUrl.includes("/upload/")) {
+      // Force attachment for Cloudinary URLs (except PDFs to avoid Cloudinary transformation errors)
+      if (downloadUrl.includes("/upload/") && file.format !== "pdf" && file.format !== "raw") {
         downloadUrl = downloadUrl.replace("/upload/", "/upload/fl_attachment/");
       }
 
@@ -237,7 +237,7 @@ function FileViewModal({ file, onClose }) {
             style={{ height: "58vh" }}
           >
             <iframe
-              src={file.url}
+              src={typeof window !== "undefined" && window.Capacitor?.isNativePlatform() ? `https://docs.google.com/viewer?url=${encodeURIComponent(file.url)}&embedded=true` : file.url}
               className="w-full h-full"
               title={file.name}
             />
