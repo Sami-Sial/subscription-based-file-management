@@ -101,7 +101,7 @@ async function checkFileLimits(folderId, format, sizeMB) {
 
 function uploadToCloudinary(file, format, onProgress) {
   return new Promise((resolve, reject) => {
-    let resourceType = "auto";
+    let resourceType = format === "pdf" ? "raw" : "auto";
 
     const formData = new FormData();
     formData.append("file", file);
